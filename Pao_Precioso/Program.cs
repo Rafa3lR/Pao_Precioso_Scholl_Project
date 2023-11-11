@@ -9,6 +9,7 @@ using System.Runtime.Intrinsics.X86;
 internal class Program
 {
     private static int posic = 0, xMenu, xStock, xSales, edit = 0, maxProd = 50, scrollStock = 0, scrollSales = 0, limitUpStock = 0, limitDownStock = 0, limitUpSales = 0, limitDownSales = 0;
+    private static string reportSales = "", reportFinal = "";
 
     private static void Main(string[] args)
     {
@@ -102,7 +103,7 @@ internal class Program
 
         if (xSales == 0)
         {
-            //AddProductSales(ref products);
+            AddProductSales(ref products, ref quantSale);
         }
         else if (xSales == 16)
         {
@@ -110,18 +111,134 @@ internal class Program
         }
         else if (xSales == 32)
         {
-            //DeleteProdSales();
+            DeleteProdSales(ref products, ref quantSale);
         }
         else if (xSales == 48)
         {
-            //EndSale();
+            EndSale();
         }
         else if (xSales == 64)
         {
-            Menu(ref products);
+            CancelSale(ref products, ref quantSale);
         }
 
         SalesMenu(ref products);
+    }
+
+    private static void AddProductSales(ref Stock[] products, ref int[] quantSale)
+    {
+        int opcao = maxProd + 1, quant = 0;
+        string confirm = "";
+
+        Console.Clear();
+        Console.WriteLine("Add. product sale\n");
+        Console.Write("Product cod.: ");
+        try
+        {
+            opcao = Convert.ToInt32(Console.ReadLine());
+        }
+        catch { }
+
+        if (products[opcao].quant > 0)
+        {
+            Console.Write($"|  {products[opcao]} - {products[opcao]}  |  (Confirm? [s/n])   ");
+            confirm = Console.ReadLine();
+
+            if (confirm == "s")
+            {
+                Console.Write("Quant.: ");
+                try
+                {
+                    quant = Convert.ToInt32(Console.ReadLine());
+                }
+                catch { }
+                
+                if (products[opcao].quant > quant)
+                {
+                    products[opcao].quant -= quant;
+                    quantSale[opcao] += quant;
+                }
+                else
+                {
+                    Console.Write("Not enough balance! ");
+                    Console.ReadKey();
+                    SalesMenu(ref products);
+                }
+            }
+            else
+            {
+                SalesMenu(ref products);
+            }
+        }
+        else
+        {
+            Console.Write("Invalid product! ");
+            Console.ReadKey();
+            SalesMenu(ref products);
+        }
+
+        SalesMenu(ref products);
+    }
+
+    private static void DeleteProdSales(ref Stock[] products, ref int[] quantSale)
+    {
+        int opcao = maxProd + 1, quant = 0;
+        string confirm = "";
+
+        Console.Clear();
+        Console.WriteLine("Delete product sale\n");
+        Console.Write("Product cod.: ");
+        try
+        {
+            opcao = Convert.ToInt32(Console.ReadLine());
+        }
+        catch { }
+
+        if (quantSale[opcao] > 0)
+        {
+            Console.Write($"|  {products[opcao]}  |  (Confirm? [s/n])   ");
+            confirm = Console.ReadLine();
+
+            if (confirm == "s")
+            {
+                products[opcao].quant += quantSale[opcao];
+                quantSale[opcao] = 0;
+            }
+        }
+        else
+        {
+            Console.Write("Invalid product! ");
+            Console.ReadKey();
+            SalesMenu(ref products);
+        }
+
+        SalesMenu(ref products);
+    }
+
+    private static void EndSale()
+    {
+
+    }
+
+    private static void CancelSale(ref Stock[] products, ref int[] quantSale)
+    {
+        string confirm = "";
+
+        Console.Clear();
+        Console.Write("Confirm? (s/n)  ");
+        confirm = Console.ReadLine();
+        if (confirm == "s")
+        {
+            for(int i = 0; i < maxProd; i++)
+            {
+                products[i].quant += quantSale[i];
+                quantSale[i] = 0;
+            }
+        }
+        else
+        {
+            SalesMenu(ref products);
+        }
     }
 
     private static void WriteProductsSalesScreen(Stock[] products, int[] quantSale, ref int y, int totalSale)
@@ -236,7 +353,7 @@ internal class Program
 
     private static void SelectOptionSalesMenu(ref string option)
     {
-        WriteAT("   Add product    Consult Stock    Delete Prod.     End sale        Main menu  ", 0, 2);
+        WriteAT("   Add product    Consult Stock    Delete Prod.     End sale        Cancel  ", 0, 2);
 
         if (option == "RightArrow")
         {
