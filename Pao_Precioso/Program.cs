@@ -115,7 +115,7 @@ internal class Program
         }
         else if (xSales == 48)
         {
-            EndSale();
+            EndSale(ref quantSale, products);
         }
         else if (xSales == 64)
         {
@@ -136,6 +136,7 @@ internal class Program
         try
         {
             opcao = Convert.ToInt32(Console.ReadLine());
+            opcao -= 1;
         }
         catch { }
 
@@ -191,6 +192,7 @@ internal class Program
         try
         {
             opcao = Convert.ToInt32(Console.ReadLine());
+            opcao -= 1;
         }
         catch { }
 
@@ -215,9 +217,16 @@ internal class Program
         SalesMenu(ref products);
     }
 
-    private static void EndSale()
+    private static void EndSale(ref int[] quantSale, Stock[] products)
     {
-
+        for (int i = 0; i < maxProd; i++)
+        {
+            if (quantSale[i] > 0)
+            {
+                reportSales += $"| (Cod.:{i + 1}) {products[i].name} * {quantSale[i]} = {products[i].price * quantSale[i]}\n";
+                quantSale[i] = 0;
+            }
+        }
     }
 
     private static void CancelSale(ref Stock[] products, ref int[] quantSale)
@@ -254,7 +263,7 @@ internal class Program
             {
                 if ((y + scrollSales) >= 7 && (y + scrollSales) < 27)
                 {
-                    WriteAT($"{i + 1}", 4, y + scrollSales); WriteAT($"{products[i].name}", 12, y + scrollSales); WriteAT($"{products[i].quant}", 28, y + scrollSales); WriteAT($"${products[i].price}", 38, y + scrollSales);
+                    WriteAT($"{i + 1}", 4, y + scrollSales); WriteAT($"{products[i].name}", 12, y + scrollSales); WriteAT($"{quantSale[i]}", 28, y + scrollSales); WriteAT($"${products[i].price * quantSale[i]}", 38, y + scrollSales);
                     WriteAT("|", 0, y + scrollSales); WriteAT(" |", 8, y + scrollSales); WriteAT(" |", 24, y + scrollSales); WriteAT(" |", 34, y + scrollSales); WriteAT(" |", 45, y + scrollSales);
                     WriteAT("------------------------------------------------------", 0, (y + scrollSales) + 1);
                 }
