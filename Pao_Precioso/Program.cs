@@ -362,7 +362,7 @@ internal class Program
 
     private static void SelectOptionSalesMenu(ref string option)
     {
-        WriteAT("   Add product    Consult Stock    Delete Prod.     End sale        Cancel  ", 0, 2);
+        WriteAT("   Add product    Consult Stock    Delete Prod.      End sale         Cancel  ", 0, 2);
 
         if (option == "RightArrow")
         {
