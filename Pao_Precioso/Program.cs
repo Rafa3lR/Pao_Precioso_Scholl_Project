@@ -615,7 +615,7 @@ internal class Program
             cod = Convert.ToInt32(Console.ReadLine());
             cod -= 1;
 
-            Console.WriteLine($"\n( {products[cod].name} - {products[cod].price} )\n");
+            Console.WriteLine($"\n( {products[cod].name} - {products[cod].quant} )\n");
             Console.Write("confirm? (s/n): ");
             confirm = Console.ReadLine();
 
@@ -661,7 +661,7 @@ internal class Program
             cod = Convert.ToInt32(Console.ReadLine());
             cod -= 1;
 
-            Console.WriteLine($"\n( {products[cod].name} - {products[cod].price} )\n");
+            Console.WriteLine($"\n( {products[cod].name} - ${products[cod].price} )\n");
             Console.Write("confirm? (s/n): ");
             confirm = Console.ReadLine();
 
@@ -707,7 +707,7 @@ internal class Program
             cod = Convert.ToInt32(Console.ReadLine());
             cod -= 1;
 
-            Console.WriteLine($"\n( {products[cod].name} - {products[cod].price} )\n");
+            Console.WriteLine($"\n( {products[cod].name} - {products[cod].expirationDate.ToString("dd, MM, yyyy")} )\n");
             Console.Write("confirm? (s/n): ");
             confirm = Console.ReadLine();
 
@@ -846,7 +846,7 @@ internal class Program
         }
         if (edit == 1)
         {
-            WriteAT("  Change quant.    Change Price    Change Date       Change name       Return" , 0, 2);
+            WriteAT("  Change quant.    Change Price    Change Date     Change name        Return" , 0, 2);
         }
         if (edit == 2)
         {
@@ -864,11 +864,20 @@ internal class Program
                 xStock = 0;
             }
 
-            if (xStock < 48 && edit == 1 || xStock < 48 && edit == 2)
+            if (xStock < 64 && edit == 1)
             {
                 xStock += 16;
             }
-            else if (xStock == 48 && edit == 1 || xStock == 48 && edit == 2)
+            else if (xStock == 64 && edit == 1)
+            {
+                xStock = 0;
+            }
+
+            if (xStock < 48 && edit == 2)
+            {
+                xStock += 16;
+            }
+            else if (xStock == 48 && edit == 2)
             {
                 xStock = 0;
             }
@@ -876,7 +885,7 @@ internal class Program
 
         if (option == "LeftArrow")
         {
-            if (xStock > 0 && edit == 0)
+            if (xStock > 0 && edit == 1 || xStock > 0 && edit == 2 || xStock > 0 && edit == 0)
             {
                 xStock -= 16;
             }
@@ -884,14 +893,13 @@ internal class Program
             {
                 xStock = 80;
             }
-
-            if (xStock > 0 && edit == 1 || xStock > 0 && edit == 2)
-            {
-                xStock -= 16;
-            }
-            else if (xStock == 0 && edit == 1 || xStock == 0 && edit == 2)
+            else if (xStock == 0 && edit == 2)
             {
                 xStock = 48;
+            }
+            else if (xStock == 0 && edit == 1)
+            {
+                xStock = 64;
             }
         }
 
