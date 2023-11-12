@@ -12,7 +12,7 @@ internal class Program
     private static int limitUpStock = 0, limitDownStock = 0, limitUpSales = 0, limitDownSales = 0, filter = 0;
     private static string reportSales = "", reportFinal = "", filterTxt = "All products";
     private static float totalSale = 0, totalReports = 0;
-    private static int[] quantSale = new int[maxProd + 1];
+    private static float[] quantSale = new float[maxProd + 1];
     private static DateTime today = DateTime.Now;
     private static TimeSpan intervalChangeColor;
 
@@ -26,7 +26,7 @@ internal class Program
     struct Stock
     {
         public string name;
-        public int quant;
+        public float quant;
         public float price;
         public DateTime expirationDate;
     }
@@ -147,7 +147,8 @@ internal class Program
 
     private static void AddProductSales(ref Stock[] products)
     {
-        int opcao = maxProd + 1, quant = 0;
+        int opcao = maxProd + 1;
+        float quant = 0;
         string confirm = "";
 
         Console.Clear();
@@ -172,7 +173,7 @@ internal class Program
                         Console.Write("Quant.: ");
                         try
                         {
-                            quant = Convert.ToInt32(Console.ReadLine());
+                            quant = Convert.ToSingle(Console.ReadLine());
                         }
                         catch { }
 
@@ -581,7 +582,7 @@ internal class Program
             Console.Write("Quant.: ");
             try
             {
-                products[posic].quant = Convert.ToInt32(Console.ReadLine());
+                products[posic].quant = Convert.ToSingle(Console.ReadLine());
             }
             catch { }
             Console.Write("Expiration date (YYYY, MM, DD): ");
@@ -628,7 +629,7 @@ internal class Program
                         Console.Write("New quant.: ");
                         try
                         {
-                            products[cod].quant = Convert.ToInt32(Console.ReadLine());
+                            products[cod].quant = Convert.ToSingle(Console.ReadLine());
                         }
                         catch { }
                     }
