@@ -12,6 +12,8 @@ internal class Program
     private static string reportSales = "", reportFinal = "";
     private static float totalSale = 0;
     private static int[] quantSale = new int[maxProd + 1];
+    private static DateTime today = DateTime.Now;
+    private static TimeSpan intervalChangeColor;
 
     private static void Main(string[] args)
     {
@@ -147,34 +149,48 @@ internal class Program
 
         if (products[opcao].quant > 0)
         {
-            Console.Write($"|  {products[opcao].name} - {products[opcao].price}  |  Confirm? (s/n): ");
-            confirm = Console.ReadLine();
+            intervalChangeColor = products[opcao].expirationDate - today;
 
-            if (confirm == "s")
+            if (intervalChangeColor.Days > 0)
             {
-                Console.Write("Quant.: ");
-                try
+                Console.Write($"|  {products[opcao].name} - {products[opcao].price}  |  Confirm? (s/n): ");
+                confirm = Console.ReadLine();
+
+                if (confirm == "s")
                 {
-                    quant = Convert.ToInt32(Console.ReadLine());
-                }
-                catch { }
-                
-                if (products[opcao].quant > quant)
-                {
-                    products[opcao].quant -= quant;
-                    quantSale[opcao] += quant;
-                    totalSale += quant * products[opcao].price;
-                    
+                    Console.Write("Quant.: ");
+                    try
+                    {
+                        quant = Convert.ToInt32(Console.ReadLine());
+                    }
+                    catch { }
+
+                    if (products[opcao].quant > quant)
+                    {
+                        products[opcao].quant -= quant;
+                        quantSale[opcao] += quant;
+                        totalSale += quant * products[opcao].price;
+
+                    }
+                    else
+                    {
+                        Console.Write("Not enough balance! ");
+                        Console.ReadKey();
+                        SalesMenu(ref products);
+                    }
                 }
                 else
                 {
-                    Console.Write("Not enough balance! ");
-                    Console.ReadKey();
                     SalesMenu(ref products);
                 }
             }
             else
             {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("\n( " + products[opcao].name + " )\n");
+                Console.ResetColor();
+                Console.Write("Expired product!");
+                Console.ReadKey();
                 SalesMenu(ref products);
             }
         }
@@ -277,9 +293,9 @@ internal class Program
     private static void WriteProductsSalesScreen(Stock[] products, ref int y)
     {
         WriteAT($"Total: {totalSale}", 0, 4);
-        WriteAT("-----------------------------------------------", 0, 5);
-        Console.WriteLine("\n|  Cod.  |  Description  |  Quant.  |  Price  |");
-        Console.WriteLine("-----------------------------------------------");
+        WriteAT("--------------------------------------------------------------", 0, 5);
+        Console.WriteLine("\n|  Cod.  |  Description             |  Quant.   |  Price     |");
+        Console.WriteLine(  "--------------------------------------------------------------");
 
         for (int i = 0; i < maxProd; i++)
         {
@@ -287,9 +303,9 @@ internal class Program
             {
                 if ((y + scrollSales) >= 7 && (y + scrollSales) < 27)
                 {
-                    WriteAT($"{i + 1}", 4, y + scrollSales); WriteAT($"{products[i].name}", 12, y + scrollSales); WriteAT($"{quantSale[i]}", 28, y + scrollSales); WriteAT($"${products[i].price * quantSale[i]}", 39, y + scrollSales);
-                    WriteAT("|", 0, y + scrollSales); WriteAT(" |", 8, y + scrollSales); WriteAT(" |", 24, y + scrollSales); WriteAT(" |", 35, y + scrollSales); WriteAT(" |", 45, y + scrollSales);
-                    WriteAT("-----------------------------------------------", 0, (y + scrollSales) + 1);
+                    WriteAT($"{i + 1}", 4, y + scrollSales); WriteAT($"{products[i].name}", 12, y + scrollSales); WriteAT($"{quantSale[i]}", 39, y + scrollSales); WriteAT($"${products[i].price * quantSale[i]}", 51, y + scrollSales);
+                    WriteAT("|", 0, y + scrollSales); WriteAT(" |", 8, y + scrollSales); WriteAT(" |", 35, y + scrollSales); WriteAT(" |", 47, y + scrollSales); WriteAT(" |", 60, y + scrollSales);
+                    WriteAT("--------------------------------------------------------------", 0, (y + scrollSales) + 1);
                 }
                 y += 2;
             }
@@ -297,9 +313,9 @@ internal class Program
 
         if (scrollSales < 0)
         {
-            WriteAT("----------------------------------------------------------------", 0, 7);
-            WriteAT("|                ^^  SCROLL UP TO SEE MORE ^^                  |", 0, 8);
-            WriteAT("----------------------------------------------------------------", 0, 9);
+            WriteAT("--------------------------------------------------------------", 0, 7);
+            WriteAT("|                ^^ SCROLL UP TO SEE MORE ^^                 |", 0, 8);
+            WriteAT("--------------------------------------------------------------", 0, 9);
             limitUpSales = 1;
         }
         else
@@ -308,9 +324,9 @@ internal class Program
         }
         if ((y + scrollSales) >= 29)
         {
-            WriteAT("----------------------------------------------------------------", 0, 27);
-            WriteAT("|                vv  SCROLL DOWN TO SEE MORE vv                |  ", 0, 28);
-            WriteAT("----------------------------------------------------------------", 0, 29);
+            WriteAT("--------------------------------------------------------------", 0, 27);
+            WriteAT("|                vv SCROLL DOWN TO SEE MORE vv                 |", 0, 28);
+            WriteAT("--------------------------------------------------------------", 0, 29);
             limitDownSales = 1;
         }
         else
@@ -330,9 +346,9 @@ internal class Program
             Console.Clear();
             Console.WriteLine(" Stock");
             y = 5;
-            WriteAT("________________________________________________________________", 0, 2);
-            Console.WriteLine("\n|  Cod.  |  Description  |  Price  |  Quant.  |  Expiration    |");
-            Console.WriteLine("----------------------------------------------------------------");
+            WriteAT("-------------------------------------------------------------------------------", 0, 2);
+            Console.WriteLine("\n|  Cod.  |  Description             |  Price    |  Quant.    |  Expiration    |");
+            Console.WriteLine("-------------------------------------------------------------------------------");
 
             for (int i = 0; i < maxProd; i++)
             {
@@ -340,9 +356,13 @@ internal class Program
                 {
                     if ((y + scrollConsultStock) >= 5 && (y + scrollConsultStock) < 25)
                     {
-                        WriteAT($"{i + 1}", 4, y + scrollConsultStock); WriteAT($"{products[i].name}", 12, y + scrollConsultStock); WriteAT($"${products[i].price}", 28, y + scrollConsultStock); WriteAT($"{products[i].quant}", 38, y + scrollConsultStock); WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 49, y + scrollConsultStock);
-                        WriteAT("|", 0, y + scrollConsultStock); WriteAT(" |", 8, y + scrollConsultStock); WriteAT(" |", 24, y + scrollConsultStock); WriteAT(" |", 34, y + scrollConsultStock); WriteAT(" |", 45, y + scrollConsultStock); WriteAT(" |", 62, y + scrollConsultStock);
-                        WriteAT("----------------------------------------------------------------", 0, (y + scrollConsultStock) + 1);
+                        intervalChangeColor = products[i].expirationDate - today;
+
+                        WriteAT($"{i + 1}", 4, y + scrollConsultStock); WriteAT($"{products[i].name}", 12, y + scrollConsultStock); WriteAT($"${products[i].price}", 39, y + scrollConsultStock); WriteAT($"{products[i].quant}", 51, y + scrollConsultStock);
+                        if (intervalChangeColor.Days < 7 && intervalChangeColor.Days > 0) { Console.ForegroundColor = ConsoleColor.Yellow; } else if (intervalChangeColor.Days <= 0) { Console.ForegroundColor = ConsoleColor.Red; }
+                        WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 64, y + scrollStock); Console.ResetColor();
+                        WriteAT("|", 0, y + scrollConsultStock); WriteAT(" |", 8, y + scrollConsultStock); WriteAT(" |", 35, y + scrollConsultStock); WriteAT(" |", 47, y + scrollConsultStock); WriteAT(" |", 60, y + scrollConsultStock); WriteAT(" |", 77, y + scrollConsultStock);
+                        WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollConsultStock) + 1);
                     }
                     y += 2;
                 }
@@ -350,9 +370,9 @@ internal class Program
 
             if (scrollConsultStock < 0)
             {
-                WriteAT("----------------------------------------------------------------", 0, 4);
-                WriteAT("|                ^^  SCROLL UP TO SEE MORE ^^                  |", 0, 5);
-                WriteAT("----------------------------------------------------------------", 0, 6);
+                WriteAT("-------------------------------------------------------------------------------", 0, 4);
+                WriteAT("|                         ^^ SCROLL UP TO SEE MORE ^^                         |", 0, 5);
+                WriteAT("-------------------------------------------------------------------------------", 0, 6);
                 limitUpConsultStock = 1;
             }
             else
@@ -361,9 +381,9 @@ internal class Program
             }
             if ((y + scrollConsultStock) >= 27)
             {
-                WriteAT("----------------------------------------------------------------", 0, 24);
-                WriteAT("|                vv  SCROLL DOWN TO SEE MORE vv                |  ", 0, 25);
-                WriteAT("----------------------------------------------------------------", 0, 26);
+                WriteAT("-------------------------------------------------------------------------------", 0, 24);
+                WriteAT("|                         vv SCROLL DOWN TO SEE MORE vv                       |", 0, 25);
+                WriteAT("-------------------------------------------------------------------------------", 0, 26);
                 limitDownConsultStock = 1;
             }
             else
@@ -442,7 +462,7 @@ internal class Program
         {
             int y = 7;
             Console.Clear();
-            Console.WriteLine(" Stock          Today: " + DateTime.Now.ToString("dd, MM, yyyy"));
+            Console.WriteLine($" Stock          Today: " + today.ToString("dd, MM, yyyy"));
 
             WriteProductsStockScreen(products, ref y);
 
@@ -741,9 +761,9 @@ internal class Program
     private static void WriteProductsStockScreen(Stock[] products, ref int y)
     {
         //Console.WriteLine("|0        |9               |25         |35          |46              |61"); X position of each "|"
-        WriteAT("________________________________________________________________", 0, 4);
-        Console.WriteLine("\n|  Cod.  |  Description  |  Price  |  Quant.  |  Expiration    |");
-        Console.WriteLine("----------------------------------------------------------------");
+        WriteAT("-------------------------------------------------------------------------------", 0, 4);
+        Console.WriteLine("\n|  Cod.  |  Description             |  Price    |  Quant.    |  Expiration    |");
+        Console.WriteLine(   "-------------------------------------------------------------------------------");
 
         for (int i = 0; i < maxProd; i++)
         {
@@ -751,9 +771,13 @@ internal class Program
             {
                 if ((y + scrollStock) >= 7 && (y + scrollStock) < 27)
                 {
-                    WriteAT($"{i + 1}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 28, y + scrollStock); WriteAT($"{products[i].quant}", 38, y + scrollStock); WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 49, y + scrollStock);
-                    WriteAT("|", 0, y + scrollStock); WriteAT(" |", 8, y + scrollStock); WriteAT(" |", 24, y + scrollStock); WriteAT(" |", 34, y + scrollStock); WriteAT(" |", 45, y + scrollStock); WriteAT(" |", 62, y + scrollStock);
-                    WriteAT("----------------------------------------------------------------", 0, (y + scrollStock) + 1);
+                    intervalChangeColor = products[i].expirationDate - today;
+
+                    WriteAT($"{i + 1}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 39, y + scrollStock); WriteAT($"{products[i].quant}", 51, y + scrollStock);
+                    if (intervalChangeColor.Days < 7 && intervalChangeColor.Days > 0) { Console.ForegroundColor = ConsoleColor.Yellow; } else if (intervalChangeColor.Days <= 0) { Console.ForegroundColor = ConsoleColor.Red; } 
+                    WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 64, y + scrollStock); Console.ResetColor();
+                    WriteAT("|", 0, y + scrollStock); WriteAT(" |", 8, y + scrollStock); WriteAT(" |", 35, y + scrollStock); WriteAT(" |", 47, y + scrollStock); WriteAT(" |", 60, y + scrollStock); WriteAT(" |", 77, y + scrollStock);
+                    WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollStock) + 1);
                 }
                 y += 2;
             }
@@ -761,9 +785,9 @@ internal class Program
 
         if (scrollStock < 0)
         {
-            WriteAT("----------------------------------------------------------------", 0, 6);
-            WriteAT("|                ^^  SCROLL UP TO SEE MORE ^^                  |", 0, 7);
-            WriteAT("----------------------------------------------------------------", 0, 8);
+            WriteAT("-------------------------------------------------------------------------------", 0, 6);
+            WriteAT("|                         ^^ SCROLL UP TO SEE MORE ^^                         |", 0, 7);
+            WriteAT("-------------------------------------------------------------------------------", 0, 8);
             limitUpStock = 1;
         }
         else
@@ -772,9 +796,9 @@ internal class Program
         }
         if ((y + scrollStock) >= 29)
         {
-            WriteAT("----------------------------------------------------------------", 0, 26);
-            WriteAT("|                vv  SCROLL DOWN TO SEE MORE vv                |  ", 0, 27);
-            WriteAT("----------------------------------------------------------------", 0, 28);
+            WriteAT("-------------------------------------------------------------------------------", 0, 26);
+            WriteAT("|                         vv SCROLL DOWN TO SEE MORE vv                       |", 0, 27);
+            WriteAT("-------------------------------------------------------------------------------", 0, 28);
             limitDownStock = 1;
         }
         else
