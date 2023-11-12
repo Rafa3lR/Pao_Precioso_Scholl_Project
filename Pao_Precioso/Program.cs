@@ -8,8 +8,9 @@ using System.Runtime.Intrinsics.X86;
 
 internal class Program
 {
-    private static int posic = 0, xMenu, xStock, xSales, edit = 0, maxProd = 50, scrollStock = 0, scrollSales = 0, limitUpStock = 0, limitDownStock = 0, limitUpSales = 0, limitDownSales = 0;
-    private static string reportSales = "", reportFinal = "";
+    private static int posic = 0, xMenu, xStock, xSales, edit = 0, maxProd = 50, scrollStock = 0, scrollSales = 0;
+    private static int limitUpStock = 0, limitDownStock = 0, limitUpSales = 0, limitDownSales = 0, filter = 0;
+    private static string reportSales = "", reportFinal = "", filterTxt = "All products";
     private static float totalSale = 0;
     private static int[] quantSale = new int[maxProd + 1];
     private static DateTime today = DateTime.Now;
@@ -473,6 +474,20 @@ internal class Program
         {
             AddProductStock(ref products);
         }
+        else if (xStock == 48 && edit == 0)
+        {
+            DeleteProd(ref products);
+        }
+        else if (xStock == 64 && edit == 0)
+        {
+            edit = 2;
+            xStock = 0;
+            StockMenu(ref products);
+        }
+        else if (xStock == 80 && edit == 0)
+        {
+            Menu(ref products);
+        }
         else if (xStock == 0 && edit == 1)
         {
             ChangeQuantProd(ref products);
@@ -480,6 +495,7 @@ internal class Program
         else if (xStock == 16 && edit == 0)
         {
             edit = 1;
+            xStock = 0;
             StockMenu(ref products);
         }
         else if (xStock == 16 && edit == 1)
@@ -499,13 +515,31 @@ internal class Program
             edit = 0;
             xStock = 16;
         }
-        else if (xStock == 48 && edit == 0)
+        else if (xStock == 0 && edit == 2)
         {
-            DeleteProd(ref products);
+            edit = 0;
+            xStock = 64;
+            filter = 0;
+            filterTxt = "All products";
         }
-        else if (xStock == 64 && edit == 0)
+        else if (xStock == 16 && edit == 2)
         {
-            Menu(ref products);
+            edit = 0;
+            xStock = 64;
+            filter = 1;
+            filterTxt = "Expired prods.";
+        }
+        else if (xStock == 32 && edit == 2)
+        {
+            edit = 0;
+            xStock = 64;
+            filter = 2;
+            filterTxt = "Almost expin.";
+        }
+        else if (xStock == 48 && edit == 2)
+        {
+            edit = 0;
+            xStock = 64;
         }
 
         StockMenu(ref products);
@@ -693,29 +727,34 @@ internal class Program
     {
         if (edit == 0)
         {
-            WriteAT("   Add product      Edit Prod.     Return prod.    Delete Prod.     Main menu  ", 0, 2);
+            WriteAT("                                                                  Filter:", 0, 1);
+            WriteAT($"   Add product      Edit Prod.     Return prod.    Delete Prod.   {filterTxt}", 0, 2); WriteAT("Main menu", 84, 2);
         }
         if (edit == 1)
         {
             WriteAT("  Change quant.    Change Price    Change Date       Return" , 0, 2);
         }
+        if (edit == 2)
+        {
+            WriteAT("  All products       Expired       Almost expi.       Return", 0 , 2);
+        }
 
         if (option == "RightArrow")
         {
-            if (xStock < 64 && edit == 0)
+            if (xStock < 80 && edit == 0)
             {
                 xStock += 16;
             }
-            else if (xStock == 64 && edit == 0)
+            else if (xStock == 80 && edit == 0)
             {
                 xStock = 0;
             }
 
-            if (xStock < 48 && edit == 1)
+            if (xStock < 48 && edit == 1 || xStock < 48 && edit == 2)
             {
                 xStock += 16;
             }
-            else if (xStock == 48 && edit == 1)
+            else if (xStock == 48 && edit == 1 || xStock == 48 && edit == 2)
             {
                 xStock = 0;
             }
@@ -729,14 +768,14 @@ internal class Program
             }
             else if (xStock == 0 && edit == 0)
             {
-                xStock = 64;
+                xStock = 80;
             }
 
-            if (xStock > 0 && edit == 1)
+            if (xStock > 0 && edit == 1 || xStock > 0 && edit == 2)
             {
                 xStock -= 16;
             }
-            else if (xStock == 0 && edit == 1)
+            else if (xStock == 0 && edit == 1 || xStock == 0 && edit == 2)
             {
                 xStock = 48;
             }
@@ -769,7 +808,7 @@ internal class Program
         {
             if (products[i].quant > 0)
             {
-                if ((y + scrollStock) >= 7 && (y + scrollStock) < 27)
+                if ((y + scrollStock) >= 7 && (y + scrollStock) < 27 && filter == 0)
                 {
                     intervalChangeColor = products[i].expirationDate - today;
 
@@ -779,7 +818,40 @@ internal class Program
                     WriteAT("|", 0, y + scrollStock); WriteAT(" |", 8, y + scrollStock); WriteAT(" |", 35, y + scrollStock); WriteAT(" |", 47, y + scrollStock); WriteAT(" |", 60, y + scrollStock); WriteAT(" |", 77, y + scrollStock);
                     WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollStock) + 1);
                 }
-                y += 2;
+
+                if ((y + scrollStock) >= 7 && (y + scrollStock) < 27 && filter == 1)
+                {
+                    intervalChangeColor = products[i].expirationDate - today;
+
+                    if (intervalChangeColor.Days <= 0)
+                    {
+                        WriteAT($"{i + 1}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 39, y + scrollStock); WriteAT($"{products[i].quant}", 51, y + scrollStock);
+                        if (intervalChangeColor.Days < 7 && intervalChangeColor.Days > 0) { Console.ForegroundColor = ConsoleColor.Yellow; } else if (intervalChangeColor.Days <= 0) { Console.ForegroundColor = ConsoleColor.Red; }
+                        WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 64, y + scrollStock); Console.ResetColor();
+                        WriteAT("|", 0, y + scrollStock); WriteAT(" |", 8, y + scrollStock); WriteAT(" |", 35, y + scrollStock); WriteAT(" |", 47, y + scrollStock); WriteAT(" |", 60, y + scrollStock); WriteAT(" |", 77, y + scrollStock);
+                        WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollStock) + 1);
+                        y += 2;
+                    }
+                }
+
+                if ((y + scrollStock) >= 7 && (y + scrollStock) < 27 && filter == 2)
+                {
+                    intervalChangeColor = products[i].expirationDate - today;
+
+                    if (intervalChangeColor.Days > 0 && intervalChangeColor.Days < 7)
+                    {
+                        WriteAT($"{i + 1}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 39, y + scrollStock); WriteAT($"{products[i].quant}", 51, y + scrollStock);
+                        if (intervalChangeColor.Days < 7 && intervalChangeColor.Days > 0) { Console.ForegroundColor = ConsoleColor.Yellow; } else if (intervalChangeColor.Days <= 0) { Console.ForegroundColor = ConsoleColor.Red; }
+                        WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 64, y + scrollStock); Console.ResetColor();
+                        WriteAT("|", 0, y + scrollStock); WriteAT(" |", 8, y + scrollStock); WriteAT(" |", 35, y + scrollStock); WriteAT(" |", 47, y + scrollStock); WriteAT(" |", 60, y + scrollStock); WriteAT(" |", 77, y + scrollStock);
+                        WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollStock) + 1);
+                        y += 2;
+                    }
+                }
+                if (filter == 0)
+                {
+                    y += 2;
+                }
             }
         }
 
