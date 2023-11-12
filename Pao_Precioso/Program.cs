@@ -54,17 +54,29 @@ internal class Program
             Console.Clear();
             Console.WriteLine(" Welcome!");
             Console.WriteLine("(use arrow keys for navigation)\n");
-            Console.WriteLine("   Sales     Stock");
+            Console.WriteLine("   Sales     Stock    Reports");
 
-            if (option == "LeftArrow" || option == "RightArrow")
+            if (option == "RightArrow")
             {
-                if (xMenu == 0)
+                if (xMenu < 20)
                 {
                     xMenu += 10;
                 }
-                else if (xMenu == 10)
+                else if (xMenu == 20)
                 {
                     xMenu = 0;
+                }
+            }
+
+            if (option == "LeftArrow")
+            {
+                if (xMenu > 0)
+                {
+                    xMenu -= 10;
+                }
+                else if (xMenu == 0)
+                {
+                    xMenu = 20;
                 }
             }
 
@@ -85,7 +97,7 @@ internal class Program
         }
         else if(xMenu == 20)
         {
-            //ReportSales();
+            ReportSales();
         }
 
         Menu(ref products);
@@ -255,7 +267,7 @@ internal class Program
             {
                 if (quantSale[i] > 0)
                 {
-                    reportSales += $"| (Cod.:{i + 1}) {products[i].name} * {quantSale[i]} = {products[i].price * quantSale[i]}\n";
+                    reportSales += $"(Cod.:{i + 1}) {products[i].name} * {quantSale[i]} = {products[i].price * quantSale[i]}\n";
                     quantSale[i] = 0;
                 }
             }
@@ -513,7 +525,11 @@ internal class Program
         {
             ChangeDate(ref products);
         }
-        else if (xStock == 48 && edit == 1)
+        else if (xStock == 48 && edit ==1)
+        {
+            ChangeName(ref products);
+        }
+        else if (xStock == 60 && edit == 1)
         {
             edit = 0;
             xStock = 16;
@@ -609,7 +625,7 @@ internal class Program
                 {
                     if (products[cod].quant > 0)
                     {
-                        Console.Write("Quant.: ");
+                        Console.Write("New quant.: ");
                         try
                         {
                             products[cod].quant = Convert.ToInt32(Console.ReadLine());
@@ -655,7 +671,7 @@ internal class Program
                 {
                     if (products[cod].quant > 0)
                     {
-                        Console.Write("Price: ");
+                        Console.Write("New price: ");
                         try
                         {
                             products[cod].price = Convert.ToInt32(Console.ReadLine());
@@ -684,7 +700,7 @@ internal class Program
         string confirm;
 
         Console.Clear();
-        Console.WriteLine("Chenge expiration date\n");
+        Console.WriteLine("Change expiration date\n");
         Console.Write("Product Cod.: ");
         try
         {
@@ -701,10 +717,56 @@ internal class Program
                 {
                     if (products[cod].quant > 0)
                     {
-                        Console.Write("Expiration date (YYYY,MM,DD): ");
+                        Console.Write("New expiration date (YYYY,MM,DD): ");
                         try
                         {
                             products[cod].expirationDate = Convert.ToDateTime(Console.ReadLine());
+                        }
+                        catch { }
+                    }
+                    else
+                    {
+                        Console.Write("Invalid product");
+                        Console.ReadKey();
+                    }
+                }
+                else
+                {
+                    Console.Write("Invalid product");
+                    Console.ReadKey();
+                }
+            }
+        }
+        catch { }
+    }
+
+    private static void ChangeName(ref Stock[] products)
+    {
+        int cod = maxProd + 1;
+        string confirm;
+
+        Console.Clear();
+        Console.WriteLine("Change name\n");
+        Console.Write("Product Cod.: ");
+        try
+        {
+            cod = Convert.ToInt32(Console.ReadLine());
+            cod -= 1;
+
+            Console.WriteLine($"\n( {products[cod].name} - {products[cod].price} )\n");
+            Console.Write("confirm? (s/n): ");
+            confirm = Console.ReadLine();
+
+            if (confirm == "s")
+            {
+                if (cod >= 0 && cod < maxProd)
+                {
+                    if (products[cod].quant > 0)
+                    {
+                        Console.Write("New name: ");
+                        try
+                        {
+                            products[cod].name = Console.ReadLine();
                         }
                         catch { }
                     }
@@ -784,7 +846,7 @@ internal class Program
         }
         if (edit == 1)
         {
-            WriteAT("  Change quant.    Change Price    Change Date       Return" , 0, 2);
+            WriteAT("  Change quant.    Change Price    Change Date       Change name       Return" , 0, 2);
         }
         if (edit == 2)
         {
@@ -870,6 +932,10 @@ internal class Program
                     WriteAT("|", 0, y + scrollStock); WriteAT(" |", 8, y + scrollStock); WriteAT(" |", 35, y + scrollStock); WriteAT(" |", 47, y + scrollStock); WriteAT(" |", 60, y + scrollStock); WriteAT(" |", 77, y + scrollStock);
                     WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollStock) + 1);
                 }
+                if (filter == 0)
+                {
+                    y += 2;
+                }
 
                 if ((y + scrollStock) >= 7 && (y + scrollStock) < 27 && filter == 1)
                 {
@@ -900,10 +966,6 @@ internal class Program
                         y += 2;
                     }
                 }
-                if (filter == 0)
-                {
-                    y += 2;
-                }
             }
         }
 
@@ -931,4 +993,20 @@ internal class Program
         }
     }
     //End stock menu
+
+
+
+
+    //Reports
+    private static void ReportSales()
+    {
+        Console.Clear();
+        Console.WriteLine(" Reports\n");
+        Console.WriteLine(reportSales);
+        if (totalReports > 0)
+        {
+            Console.WriteLine($"Total: {totalReports}");
+        }
+        Console.ReadKey();
+    }
 }
