@@ -11,7 +11,7 @@ internal class Program
     private static int posic = 0, xMenu, xStock, xSales, edit = 0, maxProd = 50, scrollStock = 0, scrollSales = 0;
     private static int limitUpStock = 0, limitDownStock = 0, limitUpSales = 0, limitDownSales = 0, filter = 0;
     private static string reportSales = "", reportFinal = "", filterTxt = "All products";
-    private static float totalSale = 0;
+    private static float totalSale = 0, totalReports = 0;
     private static int[] quantSale = new int[maxProd + 1];
     private static DateTime today = DateTime.Now;
     private static TimeSpan intervalChangeColor;
@@ -259,6 +259,9 @@ internal class Program
                     quantSale[i] = 0;
                 }
             }
+
+            totalReports += totalSale;
+            totalSale = 0;
 
             Menu(ref products);
         }
