@@ -589,6 +589,8 @@ internal class Program
     private static void ChangeQuantProd(ref Stock[] products)
     {
         int cod = maxProd + 1;
+        string confirm;
+
         Console.Clear();
         Console.WriteLine("Change product quant.\n");
         Console.Write("Product cod.: ");
@@ -598,12 +600,29 @@ internal class Program
             cod -= 1;
         }
         catch { }
-        if(cod >= 0 && cod < maxProd)
+
+        Console.WriteLine($"\n( {products[cod].name} - {products[cod].price} )\n");
+        Console.Write("confirm? (s/n): ");
+        confirm = Console.ReadLine();
+
+        if (confirm == "s")
         {
-            if (products[cod].quant > 0)
+            if (cod >= 0 && cod < maxProd)
             {
-                Console.Write("Quant.: ");
-                products[cod].quant = Convert.ToInt32(Console.ReadLine());
+                if (products[cod].quant > 0)
+                {
+                    Console.Write("Quant.: ");
+                    try
+                    {
+                        products[cod].quant = Convert.ToInt32(Console.ReadLine());
+                    }
+                    catch { }
+                }
+                else
+                {
+                    Console.Write("Invalid product");
+                    Console.ReadKey();
+                }
             }
             else
             {
@@ -611,16 +630,13 @@ internal class Program
                 Console.ReadKey();
             }
         }
-        else
-        {
-            Console.Write("Invalid product");
-            Console.ReadKey();
-        }
     }
 
     private static void ChangePrice(ref Stock[] products)
     {
         int cod = maxProd + 1;
+        string confirm;
+
         Console.Clear();
         Console.WriteLine("Change product price\n");
         Console.Write("Product Cod.: ");
@@ -631,12 +647,28 @@ internal class Program
         }
         catch { }
 
-        if (cod >= 0 && cod < maxProd)
+        Console.WriteLine($"\n( {products[cod].name} - {products[cod].price} )\n");
+        Console.Write("confirm? (s/n): ");
+        confirm = Console.ReadLine();
+
+        if (confirm == "s")
         {
-            if (products[cod].quant > 0)
+            if (cod >= 0 && cod < maxProd)
             {
-                Console.Write("Price: ");
-                products[cod].price = Convert.ToInt32(Console.ReadLine());
+                if (products[cod].quant > 0)
+                {
+                    Console.Write("Price: ");
+                    try
+                    {
+                        products[cod].price = Convert.ToInt32(Console.ReadLine());
+                    }
+                    catch { }
+                }
+                else
+                {
+                    Console.Write("Invalid product");
+                    Console.ReadKey();
+                }
             }
             else
             {
@@ -644,16 +676,13 @@ internal class Program
                 Console.ReadKey();
             }
         }
-        else
-        {
-            Console.Write("Invalid product");
-            Console.ReadKey();
-        }
     }
 
     private static void ChangeDate(ref Stock[] products)
     {
         int cod = maxProd + 1;
+        string confirm;
+
         Console.Clear();
         Console.WriteLine("Chenge expiration date\n");
         Console.Write("Product Cod.: ");
@@ -664,12 +693,28 @@ internal class Program
         }
         catch { }
 
-        if (cod >= 0 && cod < maxProd)
+        Console.WriteLine($"\n( {products[cod].name} - {products[cod].price} )\n");
+        Console.Write("confirm? (s/n): ");
+        confirm = Console.ReadLine();
+
+        if (confirm == "s")
         {
-            if (products[cod].quant > 0)
+            if (cod >= 0 && cod < maxProd)
             {
-                Console.Write("Expiration date (YYYY,MM,DD): ");
-                products[cod].expirationDate = Convert.ToDateTime(Console.ReadLine());
+                if (products[cod].quant > 0)
+                {
+                    Console.Write("Expiration date (YYYY,MM,DD): ");
+                    try
+                    {
+                        products[cod].expirationDate = Convert.ToDateTime(Console.ReadLine());
+                    }
+                    catch { }
+                }
+                else
+                {
+                    Console.Write("Invalid product");
+                    Console.ReadKey();
+                }
             }
             else
             {
@@ -677,16 +722,13 @@ internal class Program
                 Console.ReadKey();
             }
         }
-        else
-        {
-            Console.Write("Invalid product");
-            Console.ReadKey();
-        }
     }
 
     private static void DeleteProd(ref Stock[] products)
     {
         int cod = maxProd + 1;
+        string confirm;
+
         Console.Clear();
         Console.WriteLine("Delete product\n");
         Console.Write("Product Cod.: ");
@@ -697,20 +739,32 @@ internal class Program
         }
         catch { }
 
-        if (cod >= 0 && cod < maxProd)
+        Console.WriteLine($"\n( {products[cod].name} - {products[cod].price} )\n");
+        Console.Write("confirm? (s/n): ");
+        confirm = Console.ReadLine();
+
+        if (confirm == "s")
         {
-            if (products[cod].quant > 0)
+            if (cod >= 0 && cod < maxProd)
             {
-                for (int i = cod; i < maxProd; i++)
+                if (products[cod].quant > 0)
                 {
-                    products[i].name = products[i +1 ].name;
-                    products[i].price = products[i + 1].price;
-                    products[i].quant = products[i + 1].quant;
-                    products[i].expirationDate = products[i + 1].expirationDate;
+                    for (int i = cod; i < maxProd; i++)
+                    {
+                        products[i].name = products[i + 1].name;
+                        products[i].price = products[i + 1].price;
+                        products[i].quant = products[i + 1].quant;
+                        products[i].expirationDate = products[i + 1].expirationDate;
+                    }
+                    if (posic > 0)
+                    {
+                        posic--;
+                    }
                 }
-                if (posic > 0)
+                else
                 {
-                    posic--;
+                    Console.Write("Invalid product");
+                    Console.ReadKey();
                 }
             }
             else
@@ -718,11 +772,6 @@ internal class Program
                 Console.Write("Invalid product");
                 Console.ReadKey();
             }
-        }
-        else
-        {
-            Console.Write("Invalid product");
-            Console.ReadKey();
         }
     }
 
