@@ -10,6 +10,8 @@ internal class Program
 {
     private static int posic = 0, xMenu, xStock, xSales, edit = 0, maxProd = 50, scrollStock = 0, scrollSales = 0, limitUpStock = 0, limitDownStock = 0, limitUpSales = 0, limitDownSales = 0;
     private static string reportSales = "", reportFinal = "";
+    private static float totalSale = 0;
+    private static int[] quantSale = new int[maxProd + 1];
 
     private static void Main(string[] args)
     {
@@ -55,7 +57,7 @@ internal class Program
             {
                 if (xMenu == 0)
                 {
-                    xMenu = 10;
+                    xMenu += 10;
                 }
                 else if (xMenu == 10)
                 {
@@ -78,6 +80,10 @@ internal class Program
         {
             StockMenu(ref products);
         }
+        else if(xMenu == 20)
+        {
+            //ReportSales();
+        }
 
         Menu(ref products);
     }
@@ -88,22 +94,21 @@ internal class Program
     private static void SalesMenu(ref Stock[] products)
     {
         string option = "";
-        int totalSale = 0, y = 8;
-        int[] quantSale = new int[maxProd + 1];
+        int y = 8; 
         while (option != "Enter")
         {
             y = 8;
             Console.Clear();
             Console.WriteLine(" Sales");
 
-            WriteProductsSalesScreen(products, quantSale, ref y, totalSale);
+            WriteProductsSalesScreen(products, ref y);
 
             SelectOptionSalesMenu(ref option);
         }
 
         if (xSales == 0)
         {
-            AddProductSales(ref products, ref quantSale);
+            AddProductSales(ref products);
         }
         else if (xSales == 16)
         {
@@ -111,21 +116,21 @@ internal class Program
         }
         else if (xSales == 32)
         {
-            DeleteProdSales(ref products, ref quantSale);
+            DeleteProdSales(ref products);
         }
         else if (xSales == 48)
         {
-            EndSale(ref quantSale, products);
+            EndSale(products);
         }
         else if (xSales == 64)
         {
-            CancelSale(ref products, ref quantSale);
+            CancelSale(ref products);
         }
 
         SalesMenu(ref products);
     }
 
-    private static void AddProductSales(ref Stock[] products, ref int[] quantSale)
+    private static void AddProductSales(ref Stock[] products)
     {
         int opcao = maxProd + 1, quant = 0;
         string confirm = "";
@@ -142,7 +147,7 @@ internal class Program
 
         if (products[opcao].quant > 0)
         {
-            Console.Write($"|  {products[opcao]} - {products[opcao]}  |  (Confirm? [s/n])   ");
+            Console.Write($"|  {products[opcao].name} - {products[opcao].price}  |  Confirm? (s/n): ");
             confirm = Console.ReadLine();
 
             if (confirm == "s")
@@ -158,6 +163,8 @@ internal class Program
                 {
                     products[opcao].quant -= quant;
                     quantSale[opcao] += quant;
+                    totalSale += quant * products[opcao].price;
+                    
                 }
                 else
                 {
@@ -181,9 +188,9 @@ internal class Program
         SalesMenu(ref products);
     }
 
-    private static void DeleteProdSales(ref Stock[] products, ref int[] quantSale)
+    private static void DeleteProdSales(ref Stock[] products)
     {
-        int opcao = maxProd + 1, quant = 0;
+        int opcao = maxProd + 1;
         string confirm = "";
 
         Console.Clear();
@@ -204,6 +211,7 @@ internal class Program
             if (confirm == "s")
             {
                 products[opcao].quant += quantSale[opcao];
+                totalSale -= quantSale[opcao] * products[opcao].price;
                 quantSale[opcao] = 0;
             }
         }
@@ -217,19 +225,33 @@ internal class Program
         SalesMenu(ref products);
     }
 
-    private static void EndSale(ref int[] quantSale, Stock[] products)
+    private static void EndSale(Stock[] products)
     {
-        for (int i = 0; i < maxProd; i++)
+        string confirm = "";
+
+        Console.Clear();
+        Console.Write("Confirm? (s/n)  ");
+        confirm = Console.ReadLine();
+        if (confirm == "s")
         {
-            if (quantSale[i] > 0)
+            for (int i = 0; i < maxProd; i++)
             {
-                reportSales += $"| (Cod.:{i + 1}) {products[i].name} * {quantSale[i]} = {products[i].price * quantSale[i]}\n";
-                quantSale[i] = 0;
+                if (quantSale[i] > 0)
+                {
+                    reportSales += $"| (Cod.:{i + 1}) {products[i].name} * {quantSale[i]} = {products[i].price * quantSale[i]}\n";
+                    quantSale[i] = 0;
+                }
             }
+
+            Menu(ref products);
+        }
+        else
+        {
+            SalesMenu(ref products);
         }
     }
 
-    private static void CancelSale(ref Stock[] products, ref int[] quantSale)
+    private static void CancelSale(ref Stock[] products)
     {
         string confirm = "";
 
@@ -243,6 +265,8 @@ internal class Program
                 products[i].quant += quantSale[i];
                 quantSale[i] = 0;
             }
+
+            Menu(ref products);
         }
         else
         {
@@ -250,7 +274,7 @@ internal class Program
         }
     }
 
-    private static void WriteProductsSalesScreen(Stock[] products, int[] quantSale, ref int y, int totalSale)
+    private static void WriteProductsSalesScreen(Stock[] products, ref int y)
     {
         WriteAT($"Total: {totalSale}", 0, 4);
         WriteAT("-----------------------------------------------", 0, 5);
@@ -263,9 +287,9 @@ internal class Program
             {
                 if ((y + scrollSales) >= 7 && (y + scrollSales) < 27)
                 {
-                    WriteAT($"{i + 1}", 4, y + scrollSales); WriteAT($"{products[i].name}", 12, y + scrollSales); WriteAT($"{quantSale[i]}", 28, y + scrollSales); WriteAT($"${products[i].price * quantSale[i]}", 38, y + scrollSales);
-                    WriteAT("|", 0, y + scrollSales); WriteAT(" |", 8, y + scrollSales); WriteAT(" |", 24, y + scrollSales); WriteAT(" |", 34, y + scrollSales); WriteAT(" |", 45, y + scrollSales);
-                    WriteAT("------------------------------------------------------", 0, (y + scrollSales) + 1);
+                    WriteAT($"{i + 1}", 4, y + scrollSales); WriteAT($"{products[i].name}", 12, y + scrollSales); WriteAT($"{quantSale[i]}", 28, y + scrollSales); WriteAT($"${products[i].price * quantSale[i]}", 39, y + scrollSales);
+                    WriteAT("|", 0, y + scrollSales); WriteAT(" |", 8, y + scrollSales); WriteAT(" |", 24, y + scrollSales); WriteAT(" |", 35, y + scrollSales); WriteAT(" |", 45, y + scrollSales);
+                    WriteAT("-----------------------------------------------", 0, (y + scrollSales) + 1);
                 }
                 y += 2;
             }
@@ -304,7 +328,7 @@ internal class Program
         while (option != "Enter")
         {
             Console.Clear();
-            Console.WriteLine("Stock");
+            Console.WriteLine(" Stock");
             y = 5;
             WriteAT("________________________________________________________________", 0, 2);
             Console.WriteLine("\n|  Cod.  |  Description  |  Price  |  Quant.  |  Expiration    |");
