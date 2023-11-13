@@ -343,7 +343,7 @@ internal class Program
         if ((y + scrollSales) >= 29)
         {
             WriteAT("--------------------------------------------------------------", 0, 27);
-            WriteAT("|                vv SCROLL DOWN TO SEE MORE vv                 |", 0, 28);
+            WriteAT("|                vv SCROLL DOWN TO SEE MORE vv               |", 0, 28);
             WriteAT("--------------------------------------------------------------", 0, 29);
             limitDownSales = 1;
         }
@@ -378,7 +378,7 @@ internal class Program
 
                         WriteAT($"{i + 1}", 4, y + scrollConsultStock); WriteAT($"{products[i].name}", 12, y + scrollConsultStock); WriteAT($"${products[i].price}", 39, y + scrollConsultStock); WriteAT($"{products[i].quant}", 51, y + scrollConsultStock);
                         if (intervalChangeColor.Days < 7 && intervalChangeColor.Days > 0) { Console.ForegroundColor = ConsoleColor.Yellow; } else if (intervalChangeColor.Days <= 0) { Console.ForegroundColor = ConsoleColor.Red; }
-                        WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 64, y + scrollStock); Console.ResetColor();
+                        WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 64, y + scrollConsultStock); Console.ResetColor();
                         WriteAT("|", 0, y + scrollConsultStock); WriteAT(" |", 8, y + scrollConsultStock); WriteAT(" |", 35, y + scrollConsultStock); WriteAT(" |", 47, y + scrollConsultStock); WriteAT(" |", 60, y + scrollConsultStock); WriteAT(" |", 77, y + scrollConsultStock);
                         WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollConsultStock) + 1);
                     }
