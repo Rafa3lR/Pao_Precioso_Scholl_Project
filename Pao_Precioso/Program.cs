@@ -178,7 +178,7 @@ internal class Program
                         }
                         catch { }
 
-                        if (products[opcao].quant > quant)
+                        if (products[opcao].quant >= quant)
                         {
                             products[opcao].quant -= quant;
                             quantSale[opcao] += quant;
@@ -323,7 +323,7 @@ internal class Program
                 {
                     WriteAT($"{i + 1}", 4, y + scrollSales); WriteAT($"{products[i].name}", 12, y + scrollSales); WriteAT($"{quantSale[i]}", 39, y + scrollSales); WriteAT($"${products[i].price * quantSale[i]}", 51, y + scrollSales);
                     WriteAT("|", 0, y + scrollSales); WriteAT(" |", 8, y + scrollSales); WriteAT(" |", 35, y + scrollSales); WriteAT(" |", 47, y + scrollSales); WriteAT(" |", 60, y + scrollSales);
-                    WriteAT("--------------------------------------------------------------", 0, (y + scrollSales) + 1);
+                    //WriteAT("--------------------------------------------------------------", 0, (y + scrollSales) + 1);
                 }
                 y++;
             }
@@ -387,7 +387,7 @@ internal class Program
                         intervalChangeColor = products[i].expirationDate - today;
 
                         WriteAT($"{i + 1}", 4, y + scrollConsultStock); WriteAT($"{products[i].name}", 12, y + scrollConsultStock); WriteAT($"${products[i].price}", 39, y + scrollConsultStock); WriteAT($"{products[i].quant}", 51, y + scrollConsultStock);
-                        if (intervalChangeColor.Days < 7 && intervalChangeColor.Days > 0) { Console.ForegroundColor = ConsoleColor.Yellow; } else if (intervalChangeColor.Days <= 0) { Console.ForegroundColor = ConsoleColor.Red; }
+                        if (intervalChangeColor.Days < 7 && intervalChangeColor.Days >= 0) { Console.ForegroundColor = ConsoleColor.Yellow; } else if (intervalChangeColor.Days < 0) { Console.ForegroundColor = ConsoleColor.Red; }
                         WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 64, y + scrollConsultStock); Console.ResetColor();
                         WriteAT("|", 0, y + scrollConsultStock); WriteAT(" |", 8, y + scrollConsultStock); WriteAT(" |", 35, y + scrollConsultStock); WriteAT(" |", 47, y + scrollConsultStock); WriteAT(" |", 60, y + scrollConsultStock); WriteAT(" |", 77, y + scrollConsultStock);
                         //WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollConsultStock) + 1);
@@ -396,14 +396,14 @@ internal class Program
                 }
             }
 
-            if (y + scrollStock > 7 && y + scrollStock < 25)
+            if (y + scrollStock > 5 && y + scrollStock < 25)
             {
                 yy = y + scrollStock;
 
             }
             else if (y + scrollStock >= 25)
             {
-                yy = 27;
+                yy = 25;
             }
 
             WriteAT("-------------------------------------------------------------------------------", 0, yy);
@@ -593,7 +593,7 @@ internal class Program
     {
         if (posic < maxProd)
         {
-            string dd = "", MM = "", yyyy = "", date = "0000,00,00";
+            string dd = "", MM = "", yyyy = "", date = "00,00,0000";
 
             Console.Clear();
             Console.WriteLine("Add. Product\n");
@@ -614,16 +614,17 @@ internal class Program
 
             Console.Write("Expiration date (DD,MM,YYYY): ");
             
-            date = Console.ReadLine();
-            dd = date.Substring(0,2);
-            MM = date.Substring(3, 2);
-            yyyy = date.Substring(6, 4);
-
             try
             {
+                date = Console.ReadLine();
+                dd = date.Substring(0, 2);
+                MM = date.Substring(3, 2);
+                yyyy = date.Substring(6, 4);
+
                 products[posic].expirationDate = Convert.ToDateTime($"{yyyy},{MM},{dd}");
             }
             catch { }
+
             if (products[posic].quant > 0 && products[posic].price > 0)
             {
                 posic++;
@@ -731,7 +732,7 @@ internal class Program
     private static void ChangeDate(ref Stock[] products)
     {
         int cod = maxProd + 1;
-        string confirm;
+        string confirm, dd = "", MM = "", yyyy = "", date = "00,00,0000"; ;
 
         Console.Clear();
         Console.WriteLine("Change expiration date\n");
@@ -751,10 +752,16 @@ internal class Program
 
                     if (confirm == "s")
                     {
-                        Console.Write("New expiration date (YYYY,MM,DD): ");
+                        Console.Write("New expiration date (DD,MM,YYYY): ");
+
                         try
                         {
-                            products[cod].expirationDate = Convert.ToDateTime(Console.ReadLine());
+                            date = Console.ReadLine();
+                            dd = date.Substring(0, 2);
+                            MM = date.Substring(3, 2);
+                            yyyy = date.Substring(6, 4);
+
+                            products[cod].expirationDate = Convert.ToDateTime($"{yyyy},{MM},{dd}");
                         }
                         catch { }
 
@@ -971,7 +978,7 @@ internal class Program
                     intervalChangeColor = products[i].expirationDate - today;
 
                     WriteAT($"{i + 1}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 39, y + scrollStock); WriteAT($"{products[i].quant}", 51, y + scrollStock);
-                    if (intervalChangeColor.Days <= almostExpiring && intervalChangeColor.Days > 0) { Console.ForegroundColor = ConsoleColor.Yellow; } else if (intervalChangeColor.Days <= 0) { Console.ForegroundColor = ConsoleColor.Red; } 
+                    if (intervalChangeColor.Days <= almostExpiring && intervalChangeColor.Days >= 0) { Console.ForegroundColor = ConsoleColor.Yellow; } else if (intervalChangeColor.Days < 0) { Console.ForegroundColor = ConsoleColor.Red; } 
                     WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 64, y + scrollStock); Console.ResetColor();
                     WriteAT("|", 0, y + scrollStock); WriteAT(" |", 8, y + scrollStock); WriteAT(" |", 35, y + scrollStock); WriteAT(" |", 47, y + scrollStock); WriteAT(" |", 60, y + scrollStock); WriteAT(" |", 77, y + scrollStock);
                     //WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollStock) + 1);
@@ -985,7 +992,7 @@ internal class Program
                 {
                     intervalChangeColor = products[i].expirationDate - today;
 
-                    if (intervalChangeColor.Days <= 0)
+                    if (intervalChangeColor.Days < 0)
                     {
                         WriteAT($"{i + 1}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 39, y + scrollStock); WriteAT($"{products[i].quant}", 51, y + scrollStock);
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -1000,7 +1007,7 @@ internal class Program
                 {
                     intervalChangeColor = products[i].expirationDate - today;
 
-                    if (intervalChangeColor.Days <= almostExpiring && intervalChangeColor.Days > 0)
+                    if (intervalChangeColor.Days <= almostExpiring && intervalChangeColor.Days >= 0)
                     {
                         WriteAT($"{i + 1}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 39, y + scrollStock); WriteAT($"{products[i].quant}", 51, y + scrollStock);
                         Console.ForegroundColor = ConsoleColor.Yellow;
