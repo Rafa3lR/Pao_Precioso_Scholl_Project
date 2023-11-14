@@ -110,14 +110,14 @@ internal class Program
     private static void SalesMenu(ref Stock[] products)
     {
         string option = "";
-        int y = 8; 
+        int y = 8 , yy = -1; 
         while (option != "Enter")
         {
             y = 8;
             Console.Clear();
             Console.WriteLine(" Sales");
 
-            WriteProductsSalesScreen(products, ref y);
+            WriteProductsSalesScreen(products, ref y, ref yy);
 
             SelectOptionSalesMenu(ref option);
         }
@@ -128,7 +128,7 @@ internal class Program
         }
         else if (xSales == 16)
         {
-            ConsultStock(products, ref y);
+            ConsultStock(products, ref y, ref yy);
         }
         else if (xSales == 32)
         {
@@ -308,7 +308,7 @@ internal class Program
         }
     }
 
-    private static void WriteProductsSalesScreen(Stock[] products, ref int y)
+    private static void WriteProductsSalesScreen(Stock[] products, ref int y, ref int yy)
     {
         WriteAT($"Total: {totalSale}", 0, 4);
         WriteAT("--------------------------------------------------------------", 0, 5);
@@ -325,24 +325,34 @@ internal class Program
                     WriteAT("|", 0, y + scrollSales); WriteAT(" |", 8, y + scrollSales); WriteAT(" |", 35, y + scrollSales); WriteAT(" |", 47, y + scrollSales); WriteAT(" |", 60, y + scrollSales);
                     WriteAT("--------------------------------------------------------------", 0, (y + scrollSales) + 1);
                 }
-                y += 2;
+                y++;
             }
+        }
+
+        if (y + scrollStock > 7 && y + scrollStock < 27)
+        {
+            yy = y + scrollStock;
+
+        }
+        else if (y + scrollStock >= 27)
+        {
+            yy = 27;
         }
 
         if (scrollSales < 0)
         {
             WriteAT("--------------------------------------------------------------", 0, 7);
             WriteAT("|                ^^ SCROLL UP TO SEE MORE ^^                 |", 0, 8);
-            WriteAT("--------------------------------------------------------------", 0, 9);
+           //WriteAT("--------------------------------------------------------------", 0, 9);
             limitUpSales = 1;
         }
         else
         {
             limitUpSales = 0;
         }
-        if ((y + scrollSales) >= 29)
+        if ((y + scrollSales) >= 28)
         {
-            WriteAT("--------------------------------------------------------------", 0, 27);
+            //WriteAT("--------------------------------------------------------------", 0, 27);
             WriteAT("|                vv SCROLL DOWN TO SEE MORE vv               |", 0, 28);
             WriteAT("--------------------------------------------------------------", 0, 29);
             limitDownSales = 1;
@@ -353,7 +363,7 @@ internal class Program
         }
     }
 
-    private static void ConsultStock(Stock[] products, ref int y)
+    private static void ConsultStock(Stock[] products, ref int y, ref int yy)
     {
         //Console.WriteLine("|0        |9               |25         |35          |46              |61"); X position of each "|"
         string option = "";
@@ -380,26 +390,38 @@ internal class Program
                         if (intervalChangeColor.Days < 7 && intervalChangeColor.Days > 0) { Console.ForegroundColor = ConsoleColor.Yellow; } else if (intervalChangeColor.Days <= 0) { Console.ForegroundColor = ConsoleColor.Red; }
                         WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 64, y + scrollConsultStock); Console.ResetColor();
                         WriteAT("|", 0, y + scrollConsultStock); WriteAT(" |", 8, y + scrollConsultStock); WriteAT(" |", 35, y + scrollConsultStock); WriteAT(" |", 47, y + scrollConsultStock); WriteAT(" |", 60, y + scrollConsultStock); WriteAT(" |", 77, y + scrollConsultStock);
-                        WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollConsultStock) + 1);
+                        //WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollConsultStock) + 1);
                     }
-                    y += 2;
+                    y++;
                 }
             }
+
+            if (y + scrollStock > 7 && y + scrollStock < 25)
+            {
+                yy = y + scrollStock;
+
+            }
+            else if (y + scrollStock >= 25)
+            {
+                yy = 27;
+            }
+
+            WriteAT("-------------------------------------------------------------------------------", 0, yy);
 
             if (scrollConsultStock < 0)
             {
                 WriteAT("-------------------------------------------------------------------------------", 0, 4);
                 WriteAT("|                         ^^ SCROLL UP TO SEE MORE ^^                         |", 0, 5);
-                WriteAT("-------------------------------------------------------------------------------", 0, 6);
+                //WriteAT("-------------------------------------------------------------------------------", 0, 6);
                 limitUpConsultStock = 1;
             }
             else
             {
                 limitUpConsultStock = 0;
             }
-            if ((y + scrollConsultStock) >= 27)
+            if ((y + scrollConsultStock) >= 28)
             {
-                WriteAT("-------------------------------------------------------------------------------", 0, 24);
+                //WriteAT("-------------------------------------------------------------------------------", 0, 24);
                 WriteAT("|                         vv SCROLL DOWN TO SEE MORE vv                       |", 0, 25);
                 WriteAT("-------------------------------------------------------------------------------", 0, 26);
                 limitDownConsultStock = 1;
@@ -413,11 +435,11 @@ internal class Program
 
             if (option == "UpArrow" && limitUpConsultStock == 1)
             {
-                scrollConsultStock += 2;
+                scrollConsultStock ++;
             }
             if (option == "DownArrow" && limitDownConsultStock == 1)
             {
-                scrollConsultStock -= 2;
+                scrollConsultStock --;
             }
         }
     }
@@ -458,11 +480,11 @@ internal class Program
 
         if (option == "UpArrow" && limitUpSales == 1)
         {
-            scrollSales += 2;
+            scrollSales ++;
         }
         if (option == "DownArrow" && limitDownSales == 1)
         {
-            scrollSales -= 2;
+            scrollSales --;
         }
     }
     //End sales menu
@@ -475,6 +497,7 @@ internal class Program
     private static void StockMenu(ref Stock[] products)
     {
         string option = "";
+        int yy = -1;
 
         while (option != "Enter")
         {
@@ -482,7 +505,7 @@ internal class Program
             Console.Clear();
             Console.WriteLine($" Stock          Today: " + today.ToString("dd, MM, yyyy"));
 
-            WriteProductsStockScreen(products, ref y);
+            WriteProductsStockScreen(products, ref y, ref yy);
 
             SelectOptionStockMenu(ref option);
         }
@@ -570,6 +593,8 @@ internal class Program
     {
         if (posic < maxProd)
         {
+            string dd = "", MM = "", yyyy = "", date = "0000,00,00";
+
             Console.Clear();
             Console.WriteLine("Add. Product\n");
             Console.Write("Product name: ");
@@ -586,10 +611,17 @@ internal class Program
                 products[posic].quant = Convert.ToSingle(Console.ReadLine());
             }
             catch { }
-            Console.Write("Expiration date (YYYY, MM, DD): ");
+
+            Console.Write("Expiration date (DD,MM,YYYY): ");
+            
+            date = Console.ReadLine();
+            dd = date.Substring(0,2);
+            MM = date.Substring(3, 2);
+            yyyy = date.Substring(6, 4);
+
             try
             {
-                products[posic].expirationDate = Convert.ToDateTime(Console.ReadLine());
+                products[posic].expirationDate = Convert.ToDateTime($"{yyyy},{MM},{dd}");
             }
             catch { }
             if (products[posic].quant > 0 && products[posic].price > 0)
@@ -915,15 +947,15 @@ internal class Program
 
         if (option == "UpArrow" && limitUpStock == 1)
         {
-            scrollStock += 2;
+            scrollStock ++;
         }
         if (option == "DownArrow" && limitDownStock == 1)
         {
-            scrollStock -= 2;
+            scrollStock --;
         }
     }
 
-    private static void WriteProductsStockScreen(Stock[] products, ref int y)
+    private static void WriteProductsStockScreen(Stock[] products, ref int y, ref int yy)
     {
         //Console.WriteLine("|0        |9               |25         |35          |46              |61"); X position of each "|"
         WriteAT("-------------------------------------------------------------------------------", 0, 4);
@@ -942,11 +974,11 @@ internal class Program
                     if (intervalChangeColor.Days <= almostExpiring && intervalChangeColor.Days > 0) { Console.ForegroundColor = ConsoleColor.Yellow; } else if (intervalChangeColor.Days <= 0) { Console.ForegroundColor = ConsoleColor.Red; } 
                     WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 64, y + scrollStock); Console.ResetColor();
                     WriteAT("|", 0, y + scrollStock); WriteAT(" |", 8, y + scrollStock); WriteAT(" |", 35, y + scrollStock); WriteAT(" |", 47, y + scrollStock); WriteAT(" |", 60, y + scrollStock); WriteAT(" |", 77, y + scrollStock);
-                    WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollStock) + 1);
+                    //WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollStock) + 1);
                 }
                 if (filter == 0)
                 {
-                    y += 2;
+                    y ++;
                 }
 
                 if ((y + scrollStock) >= 7 && (y + scrollStock) < 27 && filter == 1)
@@ -959,8 +991,8 @@ internal class Program
                         Console.ForegroundColor = ConsoleColor.Red;
                         WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 64, y + scrollStock); Console.ResetColor();
                         WriteAT("|", 0, y + scrollStock); WriteAT(" |", 8, y + scrollStock); WriteAT(" |", 35, y + scrollStock); WriteAT(" |", 47, y + scrollStock); WriteAT(" |", 60, y + scrollStock); WriteAT(" |", 77, y + scrollStock);
-                        WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollStock) + 1);
-                        y += 2;
+                        //WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollStock) + 1);
+                        y++;
                     }
                 }
 
@@ -974,27 +1006,39 @@ internal class Program
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 64, y + scrollStock); Console.ResetColor();
                         WriteAT("|", 0, y + scrollStock); WriteAT(" |", 8, y + scrollStock); WriteAT(" |", 35, y + scrollStock); WriteAT(" |", 47, y + scrollStock); WriteAT(" |", 60, y + scrollStock); WriteAT(" |", 77, y + scrollStock);
-                        WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollStock) + 1);
-                        y += 2;
+                        //WriteAT("-------------------------------------------------------------------------------", 0, (y + scrollStock) + 1);
+                        y ++;
                     }
                 }
             }
         }
 
+        if (y + scrollStock > 7 && y + scrollStock < 27)
+        {
+            yy = y + scrollStock;
+            
+        }
+        else if (y + scrollStock >= 27)
+        {
+            yy = 27;
+        }
+
+        WriteAT("-------------------------------------------------------------------------------", 0, yy);
+
         if (scrollStock < 0)
         {
             WriteAT("-------------------------------------------------------------------------------", 0, 6);
             WriteAT("|                         ^^ SCROLL UP TO SEE MORE ^^                         |", 0, 7);
-            WriteAT("-------------------------------------------------------------------------------", 0, 8);
+            //WriteAT("-------------------------------------------------------------------------------", 0, 8);
             limitUpStock = 1;
         }
         else
         {
             limitUpStock = 0;
         }
-        if ((y + scrollStock) >= 29)
+        if ((y + scrollStock) >= 28)
         {
-            WriteAT("-------------------------------------------------------------------------------", 0, 26);
+           //WriteAT("-------------------------------------------------------------------------------", 0, 26);
             WriteAT("|                         vv SCROLL DOWN TO SEE MORE vv                       |", 0, 27);
             WriteAT("-------------------------------------------------------------------------------", 0, 28);
             limitDownStock = 1;
