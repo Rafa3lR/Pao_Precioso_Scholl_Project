@@ -30,6 +30,12 @@ internal class Program
         quant1.Close();
         StreamWriter expirationDate1 = new StreamWriter("productExpirationDate.txt", true);
         expirationDate1.Close();
+        StreamWriter reportSales1 = new StreamWriter("reportSales.txt", true);
+        reportSales1.Close();
+        StreamWriter totalReports1 = new StreamWriter("totalReports.txt", true);
+        totalReports1.Close();
+        StreamWriter allReports1 = new StreamWriter("allReports.txt", true);
+        allReports1.Close();
 
         using (StreamReader sr = new StreamReader("pruductName.txt"))
         {
@@ -582,6 +588,8 @@ internal class Program
         Console.ForegroundColor = ConsoleColor.DarkGreen;
         WriteAT("+---------------+", xSales, 4);
         Console.ResetColor();
+
+        Console.SetCursorPosition(0, 1);
 
         option = Convert.ToString(Console.ReadKey().Key);
 
@@ -1175,6 +1183,8 @@ internal class Program
         Console.ForegroundColor = ConsoleColor.DarkGreen;
         WriteAT("+---------------+", xStock, 5);
         Console.ResetColor();
+
+        Console.SetCursorPosition(0, 1);
 
         option = Convert.ToString(Console.ReadKey().Key);
 
