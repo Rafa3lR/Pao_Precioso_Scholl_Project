@@ -36,10 +36,10 @@ internal class Program
 
         if (add == 0 && delete == 0)
         {
-            using (StreamReader sr = new StreamReader("pruductName.txt"))
+            using (StreamReader sr = new StreamReader("pruductPrice.txt"))
             {
-                string name;
-                while ((name = sr.ReadLine()) != null)
+                string price;
+                while ((price = sr.ReadLine()) != null)
                 {
                     maxProd++;
                 }
