@@ -2,13 +2,15 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Data.Common;
 using System.Diagnostics;
+using System.IO.Pipes;
 using System.Net.Sockets;
 using System.Runtime.Intrinsics.X86;
 
 internal class Program
 {
-    private static int posic = 0, xMenu = 1, xStock = 1, xSales = 1, edit = 0, scrollStock = 0, scrollSales = 0;
+    private static int posic = 0, xMenu = 1, xStock = 1, xSales = 1, edit = 0, scrollStock = 0, scrollSales = 0, ident = 1;
     private const int almostExpiring = 15;
     private static int limitUpStock = 0, limitDownStock = 0, limitUpSales = 0, limitDownSales = 0, filter = 0, add = 0, delete = 0, maxProd = 1;
     private static string reportFinal = "", filterTxt = "All products";
@@ -33,6 +35,10 @@ internal class Program
         totalReports1.Close();
         StreamWriter allReports1 = new StreamWriter("allReports.txt", true);
         allReports1.Close();
+        StreamWriter ID1 = new StreamWriter("ID.txt", true);
+        ID1.Close();
+        StreamWriter productID1 = new StreamWriter("productID.txt", true);
+        productID1.Close();
 
         if (add == 0 && delete == 0)
         {
@@ -60,35 +66,54 @@ internal class Program
             }
             posic = 0;
         }
-        using (StreamReader sw = new StreamReader("pruductPrice.txt"))
+        using (StreamReader sr = new StreamReader("pruductPrice.txt"))
         {
             string price;
-            while ((price = sw.ReadLine()) != null)
+            while ((price = sr.ReadLine()) != null)
             {
                 products[posic].price = Convert.ToSingle(price);
                 posic++;
             }
             posic = 0;
         }
-        using (StreamReader sw = new StreamReader("pruductQuant.txt"))
+        using (StreamReader sr = new StreamReader("pruductQuant.txt"))
         {
             string quant;
-            while ((quant = sw.ReadLine()) != null)
+            while ((quant = sr.ReadLine()) != null)
             {
                 products[posic].quant = Convert.ToSingle(quant);
                 posic++;
             }
             posic = 0;
         }
-        using (StreamReader sw = new StreamReader("productExpirationDate.txt"))
+        using (StreamReader sr = new StreamReader("productExpirationDate.txt"))
         {
             string expirationDate;
-            while ((expirationDate = sw.ReadLine()) != null)
+            while ((expirationDate = sr.ReadLine()) != null)
             {
                 products[posic].expirationDate = Convert.ToDateTime(expirationDate);
                 posic++;
             }
+            posic = 0;
         }
+        using (StreamReader sr = new StreamReader("productID.txt"))
+        {
+            string productID;
+            while ((productID = sr.ReadLine()) != null)
+            {
+                products[posic].iD = Convert.ToInt32(productID);
+                posic++;
+            }
+        }
+        using (StreamReader sr = new StreamReader("ID.txt"))
+        {
+            string id;
+            while((id = sr.ReadLine()) != null)
+            {
+                ident = Convert.ToInt32(id);
+            }
+        }
+        
 
         if (add == 1)
         {
@@ -107,6 +132,7 @@ internal class Program
     //Data struct for the products (Estrutura de dados para os produtos)
     struct Stock
     {
+        public int iD;
         public string name;
         public float quant;
         public float price;
@@ -261,51 +287,60 @@ internal class Program
         try
         {
             opcao = Convert.ToInt32(Console.ReadLine());
-            opcao -= 1;
+            opcao = BinSearch(products, opcao, maxProd);
 
-            if (products[opcao].quant > 0)
+            if (opcao >= 0)
             {
-                intervalChangeColor = products[opcao].expirationDate - today;
-
-                if (intervalChangeColor.Days > 0)
+                if (products[opcao].quant > 0)
                 {
-                    Console.Write($"|  {products[opcao].name} - {products[opcao].price}  |  Confirm? (s/n): ");
-                    confirm = Console.ReadLine();
+                    intervalChangeColor = products[opcao].expirationDate - today;
 
-                    if (confirm == "s")
+                    if (intervalChangeColor.Days >= 0)
                     {
-                        Console.Write("Quant.: ");
-                        try
-                        {
-                            quant = Convert.ToSingle(Console.ReadLine());
-                        }
-                        catch { }
+                        Console.Write($"|  {products[opcao].name} - {products[opcao].quant}  |  Confirm? (s/n): ");
+                        confirm = Console.ReadLine();
 
-                        if (products[opcao].quant >= quant)
+                        if (confirm == "s")
                         {
-                            products[opcao].quant -= quant;
-                            quantSale[opcao] += quant;
-                            totalSale += quant * products[opcao].price;
+                            Console.Write("Quant.: ");
+                            try
+                            {
+                                quant = Convert.ToSingle(Console.ReadLine());
+                            }
+                            catch { }
 
+                            if (products[opcao].quant >= quant)
+                            {
+                                products[opcao].quant -= quant;
+                                quantSale[opcao] += quant;
+                                totalSale += quant * products[opcao].price;
+
+                            }
+                            else
+                            {
+                                Console.Write("Not enough balance! ");
+                                Console.ReadKey();
+                                SalesMenu(ref products, args, ref quantSale);
+                            }
                         }
                         else
                         {
-                            Console.Write("Not enough balance! ");
-                            Console.ReadKey();
                             SalesMenu(ref products, args, ref quantSale);
                         }
                     }
                     else
                     {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\n( " + products[opcao].name + " )\n");
+                        Console.ResetColor();
+                        Console.Write("Expired product!");
+                        Console.ReadKey();
                         SalesMenu(ref products, args, ref quantSale);
                     }
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("\n( " + products[opcao].name + " )\n");
-                    Console.ResetColor();
-                    Console.Write("Expired product!");
+                    Console.Write("Invalid product! ");
                     Console.ReadKey();
                     SalesMenu(ref products, args, ref quantSale);
                 }
@@ -333,19 +368,28 @@ internal class Program
         try
         {
             opcao = Convert.ToInt32(Console.ReadLine());
-            opcao -= 1;
+            opcao = BinSearch(products, opcao, maxProd);
 
-            if (quantSale[opcao] > 0)
+            if (opcao >= 0)
             {
-                Console.WriteLine($"\n( {products[opcao].name} )\n");
-                Console.Write("confirm? (s/n): ");
-                confirm = Console.ReadLine();
-
-                if (confirm == "s")
+                if (quantSale[opcao] > 0)
                 {
-                    products[opcao].quant += quantSale[opcao];
-                    totalSale -= quantSale[opcao] * products[opcao].price;
-                    quantSale[opcao] = 0;
+                    Console.WriteLine($"\n( {products[opcao].name} )\n");
+                    Console.Write("confirm? (s/n): ");
+                    confirm = Console.ReadLine();
+
+                    if (confirm == "s")
+                    {
+                        products[opcao].quant += quantSale[opcao];
+                        totalSale -= quantSale[opcao] * products[opcao].price;
+                        quantSale[opcao] = 0;
+                    }
+                }
+                else
+                {
+                    Console.Write("Invalid product! ");
+                    Console.ReadKey();
+                    SalesMenu(ref products, args, ref quantSale);
                 }
             }
             else
@@ -375,16 +419,11 @@ internal class Program
                 {
                     using (StreamWriter sw = new StreamWriter("reportSales.txt", true))
                     {
-                        sw.WriteLine($"(Cod.: {i + 1}) {products[i].name} - {quantSale[i]} * ${products[i].price} = ${products[i].price * quantSale[i]}");
+                        sw.WriteLine($"(Cod.: {products[i].iD}) {products[i].name} - {quantSale[i]} * ${products[i].price} = ${products[i].price * quantSale[i]}");
                     }
 
                     quantSale[i] = 0;
                 }
-            }
-
-            using (StreamWriter sw = new StreamWriter("reportSales.txt", true))
-            {
-                sw.WriteLine("Sale total: " + totalSale + "\n");
             }
 
             totalReports += totalSale;
@@ -453,7 +492,7 @@ internal class Program
                     Console.ForegroundColor = ConsoleColor.DarkBlue;
                     WriteAT("|        |                                              |             |           |", 0, y + scrollSales);
                     Console.ResetColor();
-                    WriteAT($"{i + 1}", 4, y + scrollSales); WriteAT($"{products[i].name}", 12, y + scrollSales); WriteAT($"{quantSale[i]}", 58, y + scrollSales); WriteAT($"${products[i].price * quantSale[i]}", 72, y + scrollSales);
+                    WriteAT($"{products[i].iD}", 4, y + scrollSales); WriteAT($"{products[i].name}", 12, y + scrollSales); WriteAT($"{quantSale[i]}", 58, y + scrollSales); WriteAT($"${products[i].price * quantSale[i]}", 72, y + scrollSales);
                 }
                 y++;
             }
@@ -525,7 +564,7 @@ internal class Program
                         Console.ForegroundColor = ConsoleColor.DarkBlue;
                         WriteAT("|        |                          |           |            |                |", 0, y + scrollConsultStock);
                         Console.ResetColor();
-                        WriteAT($"{i + 1}", 4, y + scrollConsultStock); WriteAT($"{products[i].name}", 12, y + scrollConsultStock); WriteAT($"${products[i].price}", 39, y + scrollConsultStock); WriteAT($"{products[i].quant}", 51, y + scrollConsultStock);
+                        WriteAT($"{products[i].iD}", 4, y + scrollConsultStock); WriteAT($"{products[i].name}", 12, y + scrollConsultStock); WriteAT($"${products[i].price}", 39, y + scrollConsultStock); WriteAT($"{products[i].quant}", 51, y + scrollConsultStock);
                         if (intervalChangeColor.Days < 7 && intervalChangeColor.Days >= 0) { Console.ForegroundColor = ConsoleColor.Yellow; } else if (intervalChangeColor.Days < 0) { Console.ForegroundColor = ConsoleColor.Red; }
                         WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 64, y + scrollConsultStock); Console.ResetColor();
                     }
@@ -643,7 +682,7 @@ internal class Program
         {
             int y = 9;
             Console.Clear();
-            Console.WriteLine($"\n                                     Stock - Today: " + today.ToString("dd, MM, yyyy"));
+            Console.WriteLine($"\n                                     Stock - Today: {today.ToString("dd, MM, yy")}");
 
             WriteProductsStockScreen(products, ref y, ref yy);
 
@@ -684,7 +723,7 @@ internal class Program
         }
         else if (xStock == 33 && edit == 0)
         {
-            //ReturnProd();
+            ReturnProd(ref products);
         }
         else if (xStock == 33 && edit == 1)
         {
@@ -767,7 +806,17 @@ internal class Program
                 }
                 catch { }
 
+                products[posic].iD = ident;
+                ident++;
 
+                using (StreamWriter sw = new StreamWriter("ID.txt", false))
+                {
+                    sw.Write(ident);
+                }
+                using (StreamWriter sw = new StreamWriter("productID.txt", true))
+                {
+                    sw.WriteLine(products[posic].iD);
+                }
                 using (StreamWriter sw = new StreamWriter("pruductName.txt", true))
                 {
                     sw.WriteLine(products[posic].name);
@@ -791,6 +840,10 @@ internal class Program
                 maxProd++;
                 Main(args);
             }
+            else
+            {
+                products[posic].price = 0;
+            }
         }
         else
         {
@@ -810,9 +863,9 @@ internal class Program
         try
         {
             cod = Convert.ToInt32(Console.ReadLine());
-            cod -= 1;
+            cod = BinSearch(products, cod, maxProd);
 
-            if (cod >= 0 && cod < maxProd)
+            if (cod >= 0)
             {
                 if (products[cod].price > 0)
                 {
@@ -862,6 +915,7 @@ internal class Program
     private static void ChangePrice(ref Stock[] products)
     {
         int cod = maxProd + 1;
+        float price = 0;
         string confirm;
 
         Console.Clear();
@@ -870,9 +924,9 @@ internal class Program
         try
         {
             cod = Convert.ToInt32(Console.ReadLine());
-            cod -= 1;
+            cod = BinSearch(products, cod, maxProd);
 
-            if (cod >= 0 && cod < maxProd)
+            if (cod >= 0)
             {
                 if (products[cod].quant > 0)
                 {
@@ -885,20 +939,25 @@ internal class Program
                         Console.Write("New price: ");
                         try
                         {
-                            products[cod].price = Convert.ToSingle(Console.ReadLine());
+                            price = Convert.ToSingle(Console.ReadLine());
                         }
                         catch { }
 
-                        StreamWriter sw1 = new StreamWriter("pruductPrice.txt", false);
-                        sw1.Close();
-
-                        for (int i = 0; i < maxProd; i++)
+                        if (price > 0)
                         {
-                            if (products[i].quant > 0)
+                            products[cod].price = price;
+
+                            StreamWriter sw1 = new StreamWriter("pruductPrice.txt", false);
+                            sw1.Close();
+
+                            for (int i = 0; i < maxProd; i++)
                             {
-                                using (StreamWriter sw = new StreamWriter("pruductPrice.txt", true))
+                                if (products[i].quant > 0)
                                 {
-                                    sw.WriteLine(products[i].price);
+                                    using (StreamWriter sw = new StreamWriter("pruductPrice.txt", true))
+                                    {
+                                        sw.WriteLine(products[i].price);
+                                    }
                                 }
                             }
                         }
@@ -930,9 +989,9 @@ internal class Program
         try
         {
             cod = Convert.ToInt32(Console.ReadLine());
-            cod -= 1;
+            cod = BinSearch(products, cod, maxProd);
 
-            if (cod >= 0 && cod < maxProd)
+            if (cod >= 0)
             {
                 if (products[cod].price > 0)
                 {
@@ -997,9 +1056,9 @@ internal class Program
         try
         {
             cod = Convert.ToInt32(Console.ReadLine());
-            cod -= 1;
+            cod = BinSearch(products, cod, maxProd);
 
-            if (cod >= 0 && cod < maxProd)
+            if (cod >= 0)
             {
                 if (products[cod].price > 0)
                 {
@@ -1057,9 +1116,9 @@ internal class Program
         try
         {
             cod = Convert.ToInt32(Console.ReadLine());
-            cod -= 1;
+            cod = BinSearch(products, cod, maxProd);
 
-            if (cod >= 0 && cod < maxProd)
+            if (cod >= 0)
             { 
                 if (products[cod].price > 0)
                 {
@@ -1068,6 +1127,8 @@ internal class Program
                     confirm = Console.ReadLine();
                     if (confirm == "s")
                     {
+                        StreamWriter productiD1 = new StreamWriter("productID.txt", false);
+                        productiD1.Close();
                         StreamWriter name1 = new StreamWriter("pruductName.txt", false);
                         name1.Close();
                         StreamWriter price1 = new StreamWriter("pruductPrice.txt", false);
@@ -1089,6 +1150,10 @@ internal class Program
                         {
                             if (products[i].price > 0)
                             {
+                                using (StreamWriter sw = new StreamWriter("productID.txt", true))
+                                {
+                                    sw.WriteLine(products[i].iD);
+                                }
                                 using (StreamWriter sw = new StreamWriter("pruductName.txt", true))
                                 {
                                     sw.WriteLine(products[i].name);
@@ -1111,7 +1176,6 @@ internal class Program
                         if (posic > 0)
                         {
                             posic--;
-
                             delete = 1;
                             maxProd--;
                             Main(args);
@@ -1129,6 +1193,89 @@ internal class Program
                 Console.Write("Invalid product");
                 Console.ReadKey();
             } 
+        }
+        catch { }
+    }
+
+    private static void ReturnProd(ref Stock[] products)
+    {
+        int cod = maxProd + 1;
+        float quant = 0;
+        string confirm;
+
+        Console.Clear();
+        Console.WriteLine("Return product\n");
+        Console.Write("Product cod.: ");
+        try
+        {
+            cod = Convert.ToInt32(Console.ReadLine());
+            cod = BinSearch(products, cod, maxProd);
+
+            if (cod >= 0)
+            {
+                if (products[cod].price > 0)
+                {
+                    Console.WriteLine($"\n( {products[cod].name} - {products[cod].quant} )\n");
+                    Console.Write("confirm? (s/n): ");
+                    confirm = Console.ReadLine();
+
+                    if (confirm == "s")
+                    {
+                        Console.Write("Returning quant.: ");
+                        try
+                        {
+                            quant = Convert.ToSingle(Console.ReadLine());
+                        }
+                        catch { }
+
+                        if (quant > 0)
+                        {
+                            products[cod].quant += quant;
+
+                            StreamWriter sw1 = new StreamWriter("pruductQuant.txt", false);
+                            sw1.Close();
+
+                            for (int i = 0; i < maxProd; i++)
+                            {
+                                if (products[i].price > 0)
+                                {
+                                    using (StreamWriter sw = new StreamWriter("pruductQuant.txt", true))
+                                    {
+                                        sw.WriteLine(products[i].quant);
+                                    }
+                                }
+                            }
+
+                            using (StreamWriter sw = new StreamWriter("reportSales.txt", true))
+                            {
+                                sw.WriteLine($"(Cod.: {products[cod].iD}) {products[cod].name} - {quant} * ${products[cod].price} = ${products[cod].price * quant} (RETURN)");
+                            }
+
+                            totalReports -= products[cod].price * quant;
+
+                            using (StreamWriter sw = new StreamWriter("totalReports.txt", false))
+                            {
+                                sw.Write(totalReports);
+                            }
+                        }
+                        else
+                        {
+                            Console.Write("Must be higher than 0  ");
+                            Console.ReadKey();
+                        }
+                    }
+                }
+                else
+                {
+                    Console.Write("Invalid product");
+                    Console.ReadKey();
+                }
+            }
+            else
+            {
+                Console.Write("Invalid product");
+                Console.ReadKey();
+            }
         }
         catch { }
     }
@@ -1255,7 +1402,7 @@ internal class Program
                     Console.ForegroundColor = ConsoleColor.DarkBlue;
                     WriteAT("|        |                                               |           |            |               |", 0, y + scrollStock);
                     Console.ResetColor();
-                    WriteAT($"{i + 1}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 60, y + scrollStock); WriteAT($"{products[i].quant}", 72, y + scrollStock);
+                    WriteAT($"{products[i].iD}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 60, y + scrollStock); WriteAT($"{products[i].quant}", 72, y + scrollStock);
                     if (intervalChangeColor.Days <= almostExpiring && intervalChangeColor.Days >= 0) { Console.ForegroundColor = ConsoleColor.Yellow; } else if (intervalChangeColor.Days < 0) { Console.ForegroundColor = ConsoleColor.Red; } 
                     WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 85, y + scrollStock); Console.ResetColor(); 
                 }
@@ -1273,7 +1420,7 @@ internal class Program
                         Console.ForegroundColor = ConsoleColor.DarkBlue;
                         WriteAT("|         |                                               |           |            |               |", 0, y + scrollStock);
                         Console.ResetColor();
-                        WriteAT($"{i + 1}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 60, y + scrollStock); WriteAT($"{products[i].quant}", 72, y + scrollStock);
+                        WriteAT($"{products[i].iD}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 60, y + scrollStock); WriteAT($"{products[i].quant}", 72, y + scrollStock);
                         Console.ForegroundColor = ConsoleColor.Red;
                         WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 85, y + scrollStock); Console.ResetColor();
                         y++;
@@ -1288,7 +1435,7 @@ internal class Program
                         Console.ForegroundColor = ConsoleColor.DarkBlue;
                         WriteAT("|         |                                               |           |            |               |", 0, y + scrollStock);
                         Console.ResetColor();
-                        WriteAT($"{i + 1}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 60, y + scrollStock); WriteAT($"{products[i].quant}", 72, y + scrollStock);
+                        WriteAT($"{products[i].iD}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 60, y + scrollStock); WriteAT($"{products[i].quant}", 72, y + scrollStock);
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         WriteAT(products[i].expirationDate.ToString("dd, MM, yyyy"), 85, y + scrollStock); Console.ResetColor();
                         y++;
@@ -1336,6 +1483,36 @@ internal class Program
 
 
 
+    //Binary search
+    private static int BinSearch(Stock[] product, int key, int maxProd)
+    {
+        int inf = 0, sup = maxProd, pos = -1, middle;
+        while (inf <= sup)
+        {
+            middle = (inf + (sup)) / 2;
+            if (product[middle].iD == key)
+            {
+                pos = middle;
+                inf = sup + 1;
+            }
+            else if (product[middle].iD < key)
+            {
+                inf = middle + 1;
+            }
+            else
+            {
+                sup = middle - 1;
+            } 
+        }
+
+        return pos;
+    }
+    //End binary search
+
+
+
+
+
     //Reports
     private static void ReportSales()
     {
@@ -1355,18 +1532,19 @@ internal class Program
         using (StreamReader sr = new StreamReader("totalReports.txt"))
         {
             string total;
-            while((total = sr.ReadLine()) != null)
+            while ((total = sr.ReadLine()) != null)
             {
                 totalReports = Convert.ToSingle(total);
             }
         }
 
-        Console.WriteLine("==============================================");
+        Console.WriteLine("\n==============================================");
 
-        if (totalReports > 0)
+        if (totalReports != 0)
         {
             Console.Write($"Total: ${totalReports}    ");
         }
+
         Console.ReadKey();
     }
 
@@ -1386,7 +1564,7 @@ internal class Program
             Console.Clear();
             Console.WriteLine(" Bye Bye!\n");
 
-            if (totalReports > 0)
+            if (totalReports != 0)
             {
                 Console.WriteLine("==============================================\n");
 
@@ -1408,9 +1586,9 @@ internal class Program
                     }
                 }
 
-                Console.WriteLine("==============================================");
+                Console.WriteLine("\n==============================================");
 
-                if (totalReports > 0)
+                if (totalReports != 0)
                 {
                     Console.Write($"Total: ${totalReports}    ");
                 }
@@ -1438,12 +1616,14 @@ internal class Program
                         }
                     }
 
-                    sw.WriteLine("==============================================");
-
-                    if (totalReports > 0)
+                    sw.WriteLine("\n==============================================");
+                  
+                    if (totalReports != 0)
                     {
                         sw.WriteLine($"Total: ${totalReports} \n");
                     }
+
+                    sw.WriteLine("----------------------------------------------\n");
                 }
 
                 using (StreamWriter sw = new StreamWriter("reportSales.txt", false))
