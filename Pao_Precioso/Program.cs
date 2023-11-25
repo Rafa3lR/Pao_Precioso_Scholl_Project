@@ -1497,6 +1497,7 @@ internal class Program
 
 
 
+
     //Binary search
     private static int BinSearch(Stock[] product, int key, int maxProd)
     {
@@ -1666,6 +1667,8 @@ internal class Program
         }
         scrollReport = 0;
     }
+
+
 
 
 
