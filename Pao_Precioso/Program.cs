@@ -10,9 +10,9 @@ using System.Runtime.Intrinsics.X86;
 
 internal class Program
 {
-    private static int posic = 0, xMenu = 1, xStock = 1, xSales = 1, edit = 0, scrollStock = 0, scrollSales = 0, ident = 1;
+    private static int posic = 0, xMenu = 1, xStock = 1, xSales = 1, edit = 0, scrollStock = 0, scrollSales = 0, ident = 1, xReports = 0, select = 0, limitReportUp = 0, limitReportDown = 0;
     private const int almostExpiring = 15;
-    private static int limitUpStock = 0, limitDownStock = 0, limitUpSales = 0, limitDownSales = 0, filter = 0, add = 0, delete = 0, maxProd = 1;
+    private static int limitUpStock = 0, limitDownStock = 0, limitUpSales = 0, limitDownSales = 0, filter = 0, add = 0, delete = 0, maxProd = 1, scrollReport = 0;
     private static string reportFinal = "", filterTxt = "All products";
     private static float totalSale = 0, totalReports = 0;
     private static DateTime today = DateTime.Now;
@@ -431,6 +431,20 @@ internal class Program
             using (StreamWriter sw = new StreamWriter("totalReports.txt", false))
             {
                 sw.Write(totalReports);
+            }
+
+            StreamWriter sw1 = new StreamWriter("pruductQuant.txt", false);
+            sw1.Close();
+
+            for (int i = 0; i < maxProd; i++)
+            {
+                if (products[i].price > 0)
+                {
+                    using (StreamWriter sw = new StreamWriter("pruductQuant.txt", true))
+                    {
+                        sw.WriteLine(products[i].quant);
+                    }
+                }
             }
 
             totalSale = 0;
@@ -1516,36 +1530,141 @@ internal class Program
     //Reports
     private static void ReportSales()
     {
-        Console.Clear();
-        Console.WriteLine(" Reports\n");
-        Console.WriteLine("==============================================\n");
+        string option1 = "";
+        int y = 1;
 
-        using (StreamReader sr = new StreamReader("reportSales.txt"))
+        while (option1 != "Enter")
         {
-            string reports;
-            while ((reports = sr.ReadLine()) != null)
+            y = 1;
+            Console.Clear();
+            Console.WriteLine("\n              Reports\n");
+            Console.WriteLine(  "    Today     All time     Return \n\n");
+            
+
+            if (select == 0)
             {
-                Console.WriteLine(reports);  
-            }
-        }
+                if (totalReports != 0)
+                {
+                    Console.WriteLine("----------------------------------------------\n");
 
-        using (StreamReader sr = new StreamReader("totalReports.txt"))
-        {
-            string total;
-            while ((total = sr.ReadLine()) != null)
+                    using (StreamReader sr = new StreamReader("reportSales.txt"))
+                    {
+                        string reports;
+                        while ((reports = sr.ReadLine()) != null)
+                        {
+                            if ((y + scrollReport) >= 1 && (y + scrollReport) < 24)
+                            {
+                                Console.WriteLine(reports);
+                            }
+                            y++;
+                        }
+                    }
+
+                    using (StreamReader sr = new StreamReader("totalReports.txt"))
+                    {
+                        string total;
+                        while ((total = sr.ReadLine()) != null)
+                        {
+                            totalReports = Convert.ToSingle(total);
+                        }
+                    }
+
+                    Console.WriteLine("\n----------------------------------------------");
+
+                    if ((y + scrollReport) < 23)
+                    {
+                        Console.Write($"Total: ${totalReports}");
+                    }
+                }
+            }
+            else
             {
-                totalReports = Convert.ToSingle(total);
+                using (StreamReader sr = new StreamReader("allReports.txt"))
+                {
+                    string reports1;
+                    while ((reports1 = sr.ReadLine()) != null)
+                    {
+                        if ((y + scrollReport) >= 1 && (y + scrollReport) < 24)
+                        {
+                            Console.WriteLine(reports1);
+                        }
+                        y++;
+                    }
+                }
             }
+
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            WriteAT("+-----------+", xReports, 4);
+
+            Console.ForegroundColor = ConsoleColor.DarkBlue;
+            if (scrollReport < 0)
+            {
+                WriteAT("          ^^ SCROLL UP TO SEE MORE ^^                                             ", 0, 6);
+                limitReportUp = 1;
+            }
+            else
+            {
+                limitReportUp = 0;
+            }
+            if ((y + scrollReport) >= 25)
+            {
+                WriteAT("          vv SCROLL DOWN TO SEE MORE vv                                                      ", 0, 29);
+                limitReportDown = 1;
+            }
+            else
+            {
+                limitReportDown = 0;
+            }
+            Console.ResetColor();
+
+            option1 = Convert.ToString(Console.ReadKey().Key);
+
+            if (option1 == "UpArrow" && limitReportUp == 1)
+            {
+                scrollReport++;
+            }
+            if (option1 == "DownArrow" && limitReportDown == 1)
+            {
+                scrollReport--;
+            }
+
+            if (option1 == "RightArrow")
+            {
+                if (xReports < 24)
+                {
+                    xReports += 12;
+                }
+                else if (xReports == 24)
+                {
+                    xReports = 0;
+                }
+            }
+            else if (option1 == "LeftArrow")
+            {
+                if (xReports > 0)
+                {
+                    xReports -= 12;
+                }
+                else if (xReports == 0)
+                {
+                    xReports = 24;
+                }
+            } 
         }
 
-        Console.WriteLine("\n==============================================");
-
-        if (totalReports != 0)
+        if (xReports == 0)
         {
-            Console.Write($"Total: ${totalReports}    ");
+            select = 0;
+            scrollReport = 0;
+            ReportSales();
         }
-
-        Console.ReadKey();
+        else if (xReports == 12)
+        {
+            select = 10;
+            scrollReport = 0;
+            ReportSales();
+        }
+        scrollReport = 0;
     }
 
 
@@ -1566,7 +1685,7 @@ internal class Program
 
             if (totalReports != 0)
             {
-                Console.WriteLine("==============================================\n");
+                Console.WriteLine("----------------------------------------------\n");
 
                 using (StreamReader sr = new StreamReader("reportSales.txt"))
                 {
@@ -1586,7 +1705,7 @@ internal class Program
                     }
                 }
 
-                Console.WriteLine("\n==============================================");
+                Console.WriteLine("\n----------------------------------------------");
 
                 if (totalReports != 0)
                 {
@@ -1596,7 +1715,7 @@ internal class Program
                 using (StreamWriter sw = new StreamWriter("allReports.txt", true))
                 {
                     sw.WriteLine(DateTime.Now.ToString("dd, MM, yyyy   hh:mm"));
-                    sw.WriteLine("==============================================\n");
+                    sw.WriteLine("----------------------------------------------\n");
 
                     using (StreamReader sr = new StreamReader("reportSales.txt"))
                     {
@@ -1616,14 +1735,14 @@ internal class Program
                         }
                     }
 
-                    sw.WriteLine("\n==============================================");
+                    sw.WriteLine("\n----------------------------------------------");
                   
                     if (totalReports != 0)
                     {
                         sw.WriteLine($"Total: ${totalReports} \n");
                     }
 
-                    sw.WriteLine("----------------------------------------------\n");
+                    sw.WriteLine("++++++++++++++++++++++++++++++++++++++++++++++\n");
                 }
 
                 using (StreamWriter sw = new StreamWriter("reportSales.txt", false))
