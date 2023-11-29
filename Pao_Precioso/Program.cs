@@ -21,6 +21,11 @@ internal class Program
 
     private static void Main(string[] args)
     {
+        //Verify if .txt exists and create if it doesn't (Verifica se o .txt existe e cria se não existir)
+        StreamWriter ID1 = new StreamWriter("ID.txt", true);
+        ID1.Close();
+        StreamWriter productID1 = new StreamWriter("productID.txt", true);
+        productID1.Close();
         StreamWriter name1 = new StreamWriter("pruductName.txt", true);
         name1.Close();
         StreamWriter price1 = new StreamWriter("pruductPrice.txt", true);
@@ -35,11 +40,7 @@ internal class Program
         totalReports1.Close();
         StreamWriter allReports1 = new StreamWriter("allReports.txt", true);
         allReports1.Close();
-        StreamWriter ID1 = new StreamWriter("ID.txt", true);
-        ID1.Close();
-        StreamWriter productID1 = new StreamWriter("productID.txt", true);
-        productID1.Close();
-
+        
         if (add == 0 && delete == 0)
         {
             using (StreamReader sr = new StreamReader("pruductPrice.txt"))
@@ -149,7 +150,7 @@ internal class Program
         }
         catch { }
     }
-
+    
 
 
 
@@ -300,7 +301,7 @@ internal class Program
                         Console.Write($"|  {products[opcao].name} - {products[opcao].quant}  |  Confirm? (s/n): ");
                         confirm = Console.ReadLine();
 
-                        if (confirm == "s")
+                        if (confirm == "s" || confirm == "S")
                         {
                             Console.Write("Quant.: ");
                             try
@@ -378,7 +379,7 @@ internal class Program
                     Console.Write("confirm? (s/n): ");
                     confirm = Console.ReadLine();
 
-                    if (confirm == "s")
+                    if (confirm == "s" || confirm == "S")
                     {
                         products[opcao].quant += quantSale[opcao];
                         totalSale -= quantSale[opcao] * products[opcao].price;
@@ -411,7 +412,7 @@ internal class Program
         Console.Clear();
         Console.Write("Confirm? (s/n)  ");
         confirm = Console.ReadLine();
-        if (confirm == "s")
+        if (confirm == "s" || confirm == "S")
         {
             for (int i = 0; i < maxProd; i++)
             {
@@ -464,7 +465,7 @@ internal class Program
         Console.Clear();
         Console.Write("Confirm? (s/n)  ");
         confirm = Console.ReadLine();
-        if (confirm == "s")
+        if (confirm == "s" || confirm == "S")
         {
             for(int i = 0; i < maxProd; i++)
             {
@@ -786,8 +787,6 @@ internal class Program
     {
         if (posic < maxProd)
         {
-            string dd = "", MM = "", yyyy = "", date = "00,00,0000";
-
             Console.Clear();
             Console.WriteLine("Add. Product\n");
             Console.Write("Product name: ");
@@ -811,12 +810,7 @@ internal class Program
 
                 try
                 {
-                    date = Console.ReadLine();
-                    dd = date.Substring(0, 2);
-                    MM = date.Substring(3, 2);
-                    yyyy = date.Substring(6, 4);
-
-                    products[posic].expirationDate = Convert.ToDateTime($"{yyyy},{MM},{dd}");
+                    products[posic].expirationDate = Convert.ToDateTime(Console.ReadLine());
                 }
                 catch { }
 
@@ -887,7 +881,7 @@ internal class Program
                     Console.Write("confirm? (s/n): ");
                     confirm = Console.ReadLine();
 
-                    if (confirm == "s")
+                    if (confirm == "s" || confirm == "S")
                     {
                         Console.Write("New quant.: ");
                         try
@@ -948,7 +942,7 @@ internal class Program
                     Console.Write("confirm? (s/n): ");
                     confirm = Console.ReadLine();
 
-                    if (confirm == "s")
+                    if (confirm == "s" || confirm == "S")
                     {
                         Console.Write("New price: ");
                         try
@@ -995,7 +989,7 @@ internal class Program
     private static void ChangeDate(ref Stock[] products)
     {
         int cod = maxProd + 1;
-        string confirm, dd = "", MM = "", yyyy = "", date = "00,00,0000"; ;
+        string confirm;
 
         Console.Clear();
         Console.WriteLine("Change expiration date\n");
@@ -1013,18 +1007,13 @@ internal class Program
                     Console.Write("confirm? (s/n): ");
                     confirm = Console.ReadLine();
 
-                    if (confirm == "s")
+                    if (confirm == "s" || confirm == "S")
                     {
                         Console.Write("New expiration date (DD,MM,YYYY): ");
 
                         try
                         {
-                            date = Console.ReadLine();
-                            dd = date.Substring(0, 2);
-                            MM = date.Substring(3, 2);
-                            yyyy = date.Substring(6, 4);
-
-                            products[cod].expirationDate = Convert.ToDateTime($"{yyyy},{MM},{dd}");
+                            products[cod].expirationDate = Convert.ToDateTime(Console.ReadLine());
 
                             StreamWriter sw1 = new StreamWriter("productExpirationDate.txt", false);
                             sw1.Close();
@@ -1080,7 +1069,7 @@ internal class Program
                     Console.Write("confirm? (s/n): ");
                     confirm = Console.ReadLine();
 
-                    if (confirm == "s")
+                    if (confirm == "s" || confirm == "S")
                     {
                         Console.Write("New name: ");
                         try
@@ -1139,7 +1128,7 @@ internal class Program
                     Console.WriteLine($"\n( {products[cod].name} - {products[cod].price} )\n");
                     Console.Write("confirm? (s/n): ");
                     confirm = Console.ReadLine();
-                    if (confirm == "s")
+                    if (confirm == "s" || confirm == "S")
                     {
                         StreamWriter productiD1 = new StreamWriter("productID.txt", false);
                         productiD1.Close();
@@ -1154,6 +1143,7 @@ internal class Program
 
                         for (int i = cod; i < maxProd; i++)
                         {
+                            products[i].iD = products[i + 1].iD;
                             products[i].name = products[i + 1].name;
                             products[i].price = products[i + 1].price;
                             products[i].quant = products[i + 1].quant;
@@ -1233,7 +1223,7 @@ internal class Program
                     Console.Write("confirm? (s/n): ");
                     confirm = Console.ReadLine();
 
-                    if (confirm == "s")
+                    if (confirm == "s" || confirm == "S")
                     {
                         Console.Write("Returning quant.: ");
                         try
@@ -1432,7 +1422,7 @@ internal class Program
                     if (intervalChangeColor.Days < 0)
                     {
                         Console.ForegroundColor = ConsoleColor.DarkBlue;
-                        WriteAT("|         |                                               |           |            |               |", 0, y + scrollStock);
+                        WriteAT("|        |                                               |           |            |               |", 0, y + scrollStock);
                         Console.ResetColor();
                         WriteAT($"{products[i].iD}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 60, y + scrollStock); WriteAT($"{products[i].quant}", 72, y + scrollStock);
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -1447,7 +1437,7 @@ internal class Program
                     if (intervalChangeColor.Days <= almostExpiring && intervalChangeColor.Days >= 0)
                     {
                         Console.ForegroundColor = ConsoleColor.DarkBlue;
-                        WriteAT("|         |                                               |           |            |               |", 0, y + scrollStock);
+                        WriteAT("|        |                                               |           |            |               |", 0, y + scrollStock);
                         Console.ResetColor();
                         WriteAT($"{products[i].iD}", 4, y + scrollStock); WriteAT($"{products[i].name}", 12, y + scrollStock); WriteAT($"${products[i].price}", 60, y + scrollStock); WriteAT($"{products[i].quant}", 72, y + scrollStock);
                         Console.ForegroundColor = ConsoleColor.Yellow;
@@ -1501,10 +1491,11 @@ internal class Program
     //Binary search
     private static int BinSearch(Stock[] product, int key, int maxProd)
     {
-        int inf = 0, sup = maxProd, pos = -1, middle;
+        int middle, pos = -1, inf = 0, sup = maxProd;
+
         while (inf <= sup)
         {
-            middle = (inf + (sup)) / 2;
+            middle = Convert.ToInt32((inf + sup) / 2);
             if (product[middle].iD == key)
             {
                 pos = middle;
