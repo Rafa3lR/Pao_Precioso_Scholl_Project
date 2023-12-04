@@ -1491,7 +1491,7 @@ internal class Program
     //Binary search
     private static int BinSearch(Stock[] product, int key, int maxProd)
     {
-        int middle, pos = -1, inf = 0, sup = maxProd;
+        int middle, pos = -1, inf = 0, sup = maxProd - 1;
 
         while (inf <= sup)
         {
