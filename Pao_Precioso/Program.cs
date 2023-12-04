@@ -1495,7 +1495,7 @@ internal class Program
 
         while (inf <= sup)
         {
-            middle = Convert.ToInt32((inf + sup) / 2);
+            middle = Convert.ToInt32((inf + (sup - inf)) / 2);
             if (product[middle].iD == key)
             {
                 pos = middle;
