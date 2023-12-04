@@ -1708,7 +1708,7 @@ internal class Program
 
                 using (StreamWriter sw = new StreamWriter("allReports.txt", true))
                 {
-                    sw.WriteLine(DateTime.Now.ToString("dd, MM, yyyy   hh:mm"));
+                    sw.WriteLine(DateTime.Now.ToString("dd, MM, yyyy   HH:mm"));
                     sw.WriteLine("----------------------------------------------\n");
 
                     using (StreamReader sr = new StreamReader("reportSales.txt"))
