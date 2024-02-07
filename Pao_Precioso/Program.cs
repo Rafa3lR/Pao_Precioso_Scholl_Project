@@ -697,7 +697,7 @@ internal class Program
         {
             int y = 9;
             Console.Clear();
-            Console.WriteLine($"\n                                     Stock - Today: {today.ToString("dd, MM, yy")}");
+            Console.WriteLine($"\n                                     Stock - Today: {today.ToString("dd/MM/yyyy")}");
 
             WriteProductsStockScreen(products, ref y, ref yy);
 
